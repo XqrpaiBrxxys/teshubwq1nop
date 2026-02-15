@@ -345,24 +345,24 @@ local function buildSettingsUI(anchorWin)
     btnClsCfg.Text = "✕"
     btnClsCfg.Font = Enum.Font.GothamBold
     btnClsCfg.TextScaled = true
-    btnClsCfg.TextColor3 = Color3.fromRGB(255,100,100)
+    btnClsCfg.TextColor3 = Color3.fromRGB(250,251,255)
     btnClsCfg.Size = UDim2.fromOffset(36,32)
     btnClsCfg.Position = UDim2.new(1,-44,0.5,-16)
-    btnClsCfg.BackgroundColor3 = Color3.fromRGB(35,20,20)
+    btnClsCfg.BackgroundColor3 = Color3.fromRGB(18,23,40)
     btnClsCfg.ZIndex = 12
     btnClsCfg.AutoButtonColor = false
     Instance.new("UICorner", btnClsCfg).CornerRadius = UDim.new(0,10)
-    local bcs = Instance.new("UIStroke", btnClsCfg); bcs.Transparency = 0.4; bcs.Color = Color3.fromRGB(220,100,100); bcs.Thickness = 1.5
+    local bcs = Instance.new("UIStroke", btnClsCfg); bcs.Transparency = 0.4; bcs.Color = Lib._neonColor; bcs.Thickness = 1.5
     Instance.new("UITextSizeConstraint", btnClsCfg).MaxTextSize = 18
     
-    -- Hover effect with red glow
+    -- Hover effect with neon glow
     btnClsCfg.MouseEnter:Connect(function()
-        Tween:Create(btnClsCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(60,25,25)}):Play()
-        Tween:Create(bcs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 2.5}):Play()
+        Tween:Create(btnClsCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(35,60,120)}):Play()
+        Tween:Create(bcs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.1, Thickness = 2.5}):Play()
     end)
     btnClsCfg.MouseLeave:Connect(function()
-        Tween:Create(btnClsCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(35,20,20)}):Play()
-        Tween:Create(bcs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 1.5}):Play()
+        Tween:Create(btnClsCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(18,23,40)}):Play()
+        Tween:Create(bcs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.4, Thickness = 1.5}):Play()
     end)
 
     -- Corpo
@@ -589,17 +589,12 @@ local function buildSettingsUI(anchorWin)
     lbColor.Size = UDim2.new(1, -24, 0, 20)
     Instance.new("UITextSizeConstraint", lbColor).MaxTextSize = 14
 
-    local colorButtonsFrame = Instance.new("Frame", rowColor)
-    colorButtonsFrame.BackgroundTransparency = 1
-    colorButtonsFrame.Position = UDim2.new(0, 10, 0, 26)
-    colorButtonsFrame.Size = UDim2.new(1, -20, 0, 40)
-    colorButtonsFrame.ZIndex = 12
-
-    local colorList = Instance.new("UIListLayout", colorButtonsFrame)
-    colorList.FillDirection = Enum.FillDirection.Horizontal
-    colorList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    colorList.Padding = UDim.new(0,5)
-    colorList.SortOrder = Enum.SortOrder.LayoutOrder
+    -- Circular color picker container
+    local colorPickerFrame = Instance.new("Frame", rowColor)
+    colorPickerFrame.BackgroundTransparency = 1
+    colorPickerFrame.Position = UDim2.new(0.5, -80, 0, 26)
+    colorPickerFrame.Size = UDim2.new(0, 160, 0, 40)
+    colorPickerFrame.ZIndex = 12
 
     -- Função para mudar cores
     local function changeNeonColor(colorName, colorValue)
@@ -653,45 +648,96 @@ local function buildSettingsUI(anchorWin)
         showToast("Color: " .. colorName)
     end
 
-    -- Criar botões de cores
-    for colorName, colorValue in pairs(NEON_COLORS) do
-        local colorBtn = Instance.new("TextButton", colorButtonsFrame)
-        colorBtn.Text = colorName
-        colorBtn.Font = Enum.Font.GothamBold
-        colorBtn.TextScaled = true
-        colorBtn.TextColor3 = Color3.fromRGB(250,251,255)
-        colorBtn.Size = UDim2.fromOffset(52, 30)
-        colorBtn.AutoButtonColor = false
-        colorBtn.ZIndex = 12
-        colorBtn.BackgroundColor3 = Lib._neonColorName == colorName and colorValue or Color3.fromRGB(20,25,45)
-        Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0,8)
-        local cbs = Instance.new("UIStroke", colorBtn); cbs.Transparency = 0.2; cbs.Color = colorValue; cbs.Thickness = 1.5
-        Instance.new("UITextSizeConstraint", colorBtn).MaxTextSize = 9
-        
-        -- Hover effect
-        colorBtn.MouseEnter:Connect(function()
-            Tween:Create(colorBtn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = colorValue}):Play()
-            Tween:Create(cbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0, Thickness = 2}):Play()
-        end)
-        colorBtn.MouseLeave:Connect(function()
-            if Lib._neonColorName ~= colorName then
-                Tween:Create(colorBtn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,25,45)}):Play()
-            end
-            Tween:Create(cbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.2, Thickness = 1.5}):Play()
-        end)
-        
-        colorBtn.MouseButton1Click:Connect(function()
-            changeNeonColor(colorName, colorValue)
+    -- Criar círculos de cores em layout radial
+    local colorOrder = {"Azul", "Roxo", "Rosa", "Verde", "Ciano", "Laranja"}
+    local colorIndex = 1
+    for _, colorName in ipairs(colorOrder) do
+        local colorValue = NEON_COLORS[colorName]
+        if colorValue then
+            local angle = (colorIndex - 1) * (360 / 6)
+            local radians = math.rad(angle)
+            local radius = 28
+            local x = radius * math.cos(radians)
+            local y = radius * math.sin(radians)
             
-            -- Atualiza visual do botão selecionado
-            for _, btn in pairs(colorButtonsFrame:GetChildren()) do
-                if btn:IsA("TextButton") then
-                    Tween:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                        BackgroundColor3 = btn == colorBtn and colorValue or Color3.fromRGB(20,25,45)
-                    }):Play()
-                end
+            local colorCircle = Instance.new("TextButton", colorPickerFrame)
+            colorCircle.Name = colorName
+            colorCircle.Text = ""
+            colorCircle.Size = UDim2.fromOffset(28, 28)
+            colorCircle.Position = UDim2.new(0.5, x - 14, 0.5, y - 14)
+            colorCircle.BackgroundColor3 = colorValue
+            colorCircle.BorderSizePixel = 0
+            colorCircle.AutoButtonColor = false
+            colorCircle.ZIndex = 12
+            Instance.new("UICorner", colorCircle).CornerRadius = UDim.new(1, 0)
+            
+            local circleStroke = Instance.new("UIStroke", colorCircle)
+            circleStroke.Transparency = Lib._neonColorName == colorName and 0 or 0.6
+            circleStroke.Color = colorValue
+            circleStroke.Thickness = Lib._neonColorName == colorName and 3 or 2
+            
+            -- Selection indicator (checkmark on selected)
+            if Lib._neonColorName == colorName then
+                local checkmark = Instance.new("TextLabel", colorCircle)
+                checkmark.Name = "Checkmark"
+                checkmark.Text = "✓"
+                checkmark.Font = Enum.Font.GothamBold
+                checkmark.TextScaled = true
+                checkmark.TextColor3 = Color3.fromRGB(250, 251, 255)
+                checkmark.BackgroundTransparency = 1
+                checkmark.Size = UDim2.new(1, 0, 1, 0)
+                checkmark.ZIndex = 13
             end
-        end)
+            
+            colorCircle.MouseEnter:Connect(function()
+                Tween:Create(colorCircle, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = colorValue}):Play()
+                Tween:Create(circleStroke, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0, Thickness = 3}):Play()
+            end)
+            
+            colorCircle.MouseLeave:Connect(function()
+                if Lib._neonColorName ~= colorName then
+                    Tween:Create(colorCircle, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = colorValue}):Play()
+                    Tween:Create(circleStroke, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.6, Thickness = 2}):Play()
+                end
+            end)
+            
+            colorCircle.MouseButton1Click:Connect(function()
+                changeNeonColor(colorName, colorValue)
+                
+                -- Atualiza visual de todas as cores
+                for _, circle in pairs(colorPickerFrame:GetChildren()) do
+                    if circle:IsA("TextButton") then
+                        local cColor = NEON_COLORS[circle.Name]
+                        if cColor then
+                            local isSelected = circle == colorCircle
+                            Tween:Create(circle, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = cColor}):Play()
+                            
+                            local cStroke = circle:FindFirstChildOfClass("UIStroke")
+                            if cStroke then
+                                Tween:Create(cStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = isSelected and 0 or 0.6, Thickness = isSelected and 3 or 2}):Play()
+                            end
+                            
+                            local checkmark = circle:FindFirstChild("Checkmark")
+                            if isSelected and not checkmark then
+                                checkmark = Instance.new("TextLabel", circle)
+                                checkmark.Name = "Checkmark"
+                                checkmark.Text = "✓"
+                                checkmark.Font = Enum.Font.GothamBold
+                                checkmark.TextScaled = true
+                                checkmark.TextColor3 = Color3.fromRGB(250, 251, 255)
+                                checkmark.BackgroundTransparency = 1
+                                checkmark.Size = UDim2.new(1, 0, 1, 0)
+                                checkmark.ZIndex = 13
+                            elseif checkmark and not isSelected then
+                                checkmark:Destroy()
+                            end
+                        end
+                    end
+                end
+            end)
+            
+            colorIndex = colorIndex + 1
+        end
     end
 
     -- posiciona ao lado da janela
@@ -1378,22 +1424,11 @@ function Lib:_spawnWindow(opts)
             body.Visible = false
             btnMin.Text = "+"
             Tween:Create(win, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(780, 76)}):Play()
-            -- Esconde launcher ao minimizar
-            if Lib._launcherBtn and Lib._launcherBtn.Parent then
-                Tween:Create(Lib._launcherBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
-                task.wait(0.25)
-                Lib._launcherBtn.Visible = false
-            end
         else
             -- Maximizar
             body.Visible = true
             btnMin.Text = "-"
             Tween:Create(win, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(780, 500)}):Play()
-            -- Mostra launcher ao maximizar
-            if Lib._launcherBtn and Lib._launcherBtn.Parent then
-                Lib._launcherBtn.Visible = true
-                Tween:Create(Lib._launcherBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
-            end
             task.wait(0.15)
             Tween:Create(body, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
         end
