@@ -23,6 +23,9 @@ Lib._lastOpts        = nil
 Lib._openWindows     = {}
 Lib._destroyingFlag  = false
 
+-- Referências de strokes para mudança de cor
+Lib._panelStrokes    = {}
+
 Lib._launcherEnabled = true
 Lib._showLauncher    = (_G.SyniX_Settings and _G.SyniX_Settings.showLauncher) ~= false
 
@@ -194,9 +197,9 @@ local function ensureLauncher()
     launcher.BorderSizePixel = 0
     launcher.AutoButtonColor = false
     launcher.ZIndex = 1001
-    launcher.ImageColor3 = Color3.fromRGB(110,160,255)
+    launcher.ImageColor3 = Lib._neonColor
     Instance.new("UICorner", launcher).CornerRadius = UDim.new(0,18)
-    local s = Instance.new("UIStroke", launcher); s.Transparency = 0.2; s.Color = Color3.fromRGB(110,160,255); s.Thickness = 2.5
+    local s = Instance.new("UIStroke", launcher); s.Transparency = 0.2; s.Color = Lib._neonColor; s.Thickness = 2.5
     launcher.Parent = gui
 
     -- Hover effect launcher com glow
@@ -344,7 +347,7 @@ local function buildSettingsUI(anchorWin)
     btnClsCfg.TextScaled = true
     btnClsCfg.TextColor3 = Color3.fromRGB(255,100,100)
     btnClsCfg.Size = UDim2.fromOffset(36,32)
-    btnClsCfg.Position = UDim2.new(1,-12,0.5,-16)
+    btnClsCfg.Position = UDim2.new(1,-44,0.5,-16)
     btnClsCfg.BackgroundColor3 = Color3.fromRGB(35,20,20)
     btnClsCfg.ZIndex = 12
     btnClsCfg.AutoButtonColor = false
@@ -604,7 +607,7 @@ local function buildSettingsUI(anchorWin)
         Lib._neonColor = colorValue
         saveSettings()
         
-        -- Atualiza cores dos elementos
+        -- Atualiza cores dos elementos da configuração
         Tween:Create(st, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
         Tween:Create(hs, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
         Tween:Create(rcs, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
@@ -627,6 +630,25 @@ local function buildSettingsUI(anchorWin)
         
         Tween:Create(panel, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = darkBg}):Play()
         Tween:Create(head, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = headerBg}):Play()
+        
+        -- Atualiza cores do painel principal se existir
+        if Lib._currentGui and Lib._currentGui.Parent then
+            local win = Lib._currentGui:FindFirstChild("Window")
+            if win then
+                -- Atualiza strokes do painel principal
+                for _, child in pairs(win:GetDescendants()) do
+                    if child:IsA("UIStroke") then
+                        Tween:Create(child, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+                    end
+                end
+                
+                -- Atualiza header do painel principal
+                local header = win:FindFirstChild("Frame")
+                if header then
+                    Tween:Create(header, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = headerBg}):Play()
+                end
+            end
+        end
         
         showToast("Color: " .. colorName)
     end
@@ -1141,6 +1163,15 @@ end
 -- ===== Janela principal =====
 function Lib:_spawnWindow(opts)
     opts = opts or {}
+    
+    -- Restaura launcher e hotkey
+    Lib._launcherEnabled = true
+    if Lib._hotkeyConn then
+        Lib._hotkeyConn:Disconnect()
+        Lib._hotkeyConn = nil
+    end
+    bindGlobalHotkey()
+    
     local theme = merge(DEFAULT_THEME, (opts and opts.theme) or {})
     if opts and opts.size then theme.winSize = opts.size end
     if opts and opts.discord then Lib:SetDiscord(opts.discord) end
@@ -1166,7 +1197,7 @@ function Lib:_spawnWindow(opts)
     win.Size = theme.winSize
     win.BackgroundColor3 = theme.bg_window
     Instance.new("UICorner", win).CornerRadius = UDim.new(0,18)
-    local wS = Instance.new("UIStroke", win); wS.Color=Color3.fromRGB(110,160,255); wS.Transparency=0.25; wS.Thickness=2
+    local wS = Instance.new("UIStroke", win); wS.Color = Lib._neonColor; wS.Transparency = 0.25; wS.Thickness = 2
     win.Parent = gui
     enableDrag(win, true)
 
@@ -1178,20 +1209,24 @@ function Lib:_spawnWindow(opts)
     header.Position = UDim2.new(0, 8, 0, 8)
     header.BorderSizePixel = 0
     Instance.new("UICorner", header).CornerRadius = UDim.new(0,14)
-    local hs = Instance.new("UIStroke", header); hs.Color = Color3.fromRGB(110,160,255); hs.Transparency = 0.35; hs.Thickness = 1.5
+    local hs = Instance.new("UIStroke", header); hs.Color = Lib._neonColor; hs.Transparency = 0.35; hs.Thickness = 1.5
 
     local hIcon = Instance.new("ImageLabel", header)
     hIcon.BackgroundTransparency = 1
     hIcon.Image = "rbxassetid://14862323455"
     hIcon.Size = UDim2.fromOffset(32,32)
     hIcon.Position = UDim2.new(0, 10, 0.5, -16)
-    hIcon.ImageColor3 = Color3.fromRGB(110,160,255)
+    hIcon.ImageColor3 = Lib._neonColor
     
     -- Glow effect no ícone
     local glow = Instance.new("UIGradient", hIcon)
     glow.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(110,160,255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(80,130,220))
+        ColorSequenceKeypoint.new(0, Lib._neonColor),
+        ColorSequenceKeypoint.new(1, Color3.new(
+            math.max(0, Lib._neonColor.R - 0.15),
+            math.max(0, Lib._neonColor.G - 0.15),
+            math.max(0, Lib._neonColor.B - 0.15)
+        ))
     })
 
     local hTitle = Instance.new("TextLabel", header)
@@ -1214,7 +1249,7 @@ function Lib:_spawnWindow(opts)
         b.TextColor3 = Color3.fromRGB(250,251,255)
         b.AutoButtonColor = false
         Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
-        local bs = Instance.new("UIStroke", b); bs.Transparency = 0.4; bs.Color = Color3.fromRGB(110,160,255); bs.Thickness = 1.5
+        local bs = Instance.new("UIStroke", b); bs.Transparency = 0.4; bs.Color = Lib._neonColor; bs.Thickness = 1.5
         Instance.new("UITextSizeConstraint", b).MaxTextSize = 20
         
         -- Hover effects com glow
@@ -1233,6 +1268,9 @@ function Lib:_spawnWindow(opts)
     local btnMin = mkHeadBtn("-"); btnMin.Parent = header; btnMin.Size = UDim2.fromOffset(36,32); btnMin.Position = UDim2.new(1,-88,0.5,-16)
     local btnCfg = mkHeadBtn("⚙"); btnCfg.Parent = header; btnCfg.Size = UDim2.fromOffset(36,32); btnCfg.Position = UDim2.new(1,-132,0.5,-16)
 
+    -- Estado de minimização
+    local isMinimized = false
+
     -- Body
     local body = Instance.new("Frame", win)
     body.BackgroundTransparency = 1
@@ -1246,7 +1284,7 @@ function Lib:_spawnWindow(opts)
     sidebar.ScrollBarThickness = 5
     sidebar.CanvasSize = UDim2.new(0,0,0,0)
     Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0,14)
-    local sbs = Instance.new("UIStroke", sidebar); sbs.Transparency = 0.45; sbs.Color = Color3.fromRGB(110,160,255); sbs.Thickness = 1.5
+    local sbs = Instance.new("UIStroke", sidebar); sbs.Transparency = 0.45; sbs.Color = Lib._neonColor; sbs.Thickness = 1.5
     local sList = Instance.new("UIListLayout", sidebar)
     sList.Padding = UDim.new(0,6)
     sList.SortOrder = Enum.SortOrder.LayoutOrder
@@ -1259,7 +1297,7 @@ function Lib:_spawnWindow(opts)
     content.Size = UDim2.new(1, -(theme.sidebarWidth+8), 1, 0)
     content.Position = UDim2.new(0, theme.sidebarWidth+8, 0, 0)
     Instance.new("UICorner", content).CornerRadius = UDim.new(0,14)
-    local cs = Instance.new("UIStroke", content); cs.Transparency = 0.45; cs.Color = Color3.fromRGB(110,160,255); cs.Thickness = 1.5
+    local cs = Instance.new("UIStroke", content); cs.Transparency = 0.45; cs.Color = Lib._neonColor; cs.Thickness = 1.5
 
     local pageTitle = Instance.new("TextLabel", content)
     pageTitle.BackgroundTransparency = 1
@@ -1330,8 +1368,39 @@ function Lib:_spawnWindow(opts)
         
         Lib._destroyingFlag = false
     end
+    
+    -- Função para minimizar/maximizar painel
+    local function toggleMinimize()
+        isMinimized = not isMinimized
+        if isMinimized then
+            -- Minimizar
+            Tween:Create(body, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+            body.Visible = false
+            btnMin.Text = "+"
+            Tween:Create(win, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(780, 76)}):Play()
+            -- Esconde launcher ao minimizar
+            if Lib._launcherBtn and Lib._launcherBtn.Parent then
+                Tween:Create(Lib._launcherBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
+                task.wait(0.25)
+                Lib._launcherBtn.Visible = false
+            end
+        else
+            -- Maximizar
+            body.Visible = true
+            btnMin.Text = "-"
+            Tween:Create(win, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(780, 500)}):Play()
+            -- Mostra launcher ao maximizar
+            if Lib._launcherBtn and Lib._launcherBtn.Parent then
+                Lib._launcherBtn.Visible = true
+                Tween:Create(Lib._launcherBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+            end
+            task.wait(0.15)
+            Tween:Create(body, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+        end
+    end
+    
     btnMin.MouseButton1Click:Connect(function() 
-        Lib:_setMainVisible(false) 
+        toggleMinimize()
     end)
     btnCls.MouseButton1Click:Connect(function() 
         if not Lib._destroyingFlag then
