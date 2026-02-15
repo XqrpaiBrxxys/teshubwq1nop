@@ -251,7 +251,7 @@ end
 local function bindGlobalHotkey()
     if Lib._hotkeyConn then return end
     Lib._hotkeyConn = UIS.InputBegan:Connect(function(input, gpe)
-        if gpe or Lib._capturingKey then return end
+        if gpe or Lib._capturingKey or not Lib._launcherEnabled then return end
         if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Lib._minKey then
             if Lib._currentGui and Lib._currentGui.Parent then
                 Lib:_setMainVisible(not Lib._currentGui.Enabled)
@@ -293,7 +293,7 @@ local function buildSettingsUI(anchorWin)
     -- Shadow do painel
     local shadow = Instance.new("Frame")
     shadow.Name = "Shadow"
-    shadow.Size = UDim2.fromOffset(364, 344)
+    shadow.Size = UDim2.fromOffset(364, 364)
     shadow.BackgroundColor3 = Color3.fromRGB(0,0,0)
     shadow.BackgroundTransparency = 0.6
     shadow.ZIndex = 9
@@ -303,7 +303,7 @@ local function buildSettingsUI(anchorWin)
     -- Painel
     local panel = Instance.new("Frame")
     panel.Name = "Panel"
-    panel.Size = UDim2.fromOffset(360, 340)
+    panel.Size = UDim2.fromOffset(360, 360)
     panel.BackgroundColor3 = Color3.fromRGB(10,11,18)
     panel.ZIndex = 10
     panel.Parent = gui
@@ -314,8 +314,8 @@ local function buildSettingsUI(anchorWin)
     -- Animação de entrada
     panel.Size = UDim2.fromOffset(360, 0)
     shadow.Size = UDim2.fromOffset(364, 0)
-    Tween:Create(panel, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(360, 340)}):Play()
-    Tween:Create(shadow, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(364, 344)}):Play()
+    Tween:Create(panel, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(360, 360)}):Play()
+    Tween:Create(shadow, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(364, 364)}):Play()
 
     -- Header (só "-")
     local head = Instance.new("Frame", panel)
@@ -338,35 +338,13 @@ local function buildSettingsUI(anchorWin)
     title.Size = UDim2.new(1, -70, 1, -8)
     Instance.new("UITextSizeConstraint", title).MaxTextSize = 20
 
-    local minCfg = Instance.new("TextButton", head)
-    minCfg.Text = "-"
-    minCfg.Font = Enum.Font.GothamBold
-    minCfg.TextScaled = true
-    minCfg.TextColor3 = Color3.fromRGB(250,251,255)
-    minCfg.Size = UDim2.fromOffset(36,32)
-    minCfg.Position = UDim2.new(1,-44,0.5,-16)
-    minCfg.BackgroundColor3 = Color3.fromRGB(22,26,45)
-    minCfg.ZIndex = 12
-    minCfg.AutoButtonColor = false
-    Instance.new("UICorner", minCfg).CornerRadius = UDim.new(0,10)
-    local mcs = Instance.new("UIStroke", minCfg); mcs.Transparency = 0.4; mcs.Color = Color3.fromRGB(110,160,255); mcs.Thickness = 1.5
-    Instance.new("UITextSizeConstraint", minCfg).MaxTextSize = 20
-    
-    -- Hover effect
-    minCfg.MouseEnter:Connect(function()
-        Tween:Create(minCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(40,60,120)}):Play()
-    end)
-    minCfg.MouseLeave:Connect(function()
-        Tween:Create(minCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(22,26,45)}):Play()
-    end)
-
     local btnClsCfg = Instance.new("TextButton", head)
     btnClsCfg.Text = "✕"
     btnClsCfg.Font = Enum.Font.GothamBold
     btnClsCfg.TextScaled = true
     btnClsCfg.TextColor3 = Color3.fromRGB(255,100,100)
     btnClsCfg.Size = UDim2.fromOffset(36,32)
-    btnClsCfg.Position = UDim2.new(1,-8,0.5,-16)
+    btnClsCfg.Position = UDim2.new(1,-12,0.5,-16)
     btnClsCfg.BackgroundColor3 = Color3.fromRGB(35,20,20)
     btnClsCfg.ZIndex = 12
     btnClsCfg.AutoButtonColor = false
@@ -383,9 +361,6 @@ local function buildSettingsUI(anchorWin)
         Tween:Create(btnClsCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(35,20,20)}):Play()
         Tween:Create(bcs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 1.5}):Play()
     end)
-
-    -- Estado de minimização
-    local isMinimized = false
 
     -- Corpo
     local body = Instance.new("Frame", panel)
@@ -552,34 +527,10 @@ local function buildSettingsUI(anchorWin)
         end)
     end
 
-    -- Função de minimizar/maximizar
-    local function toggleMinimize()
-        isMinimized = not isMinimized
-        if isMinimized then
-            -- Minimizar: esconde body, reduz altura
-            Tween:Create(body, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
-            body.Visible = false
-            minCfg.Text = "+"
-            Tween:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(360, 66)}):Play()
-            Tween:Create(shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(364, 70)}):Play()
-        else
-            -- Maximizar: mostra body, aumenta altura
-            body.Visible = true
-            minCfg.Text = "-"
-            Tween:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(360, 340)}):Play()
-            Tween:Create(shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(364, 344)}):Play()
-            task.wait(0.15)
-            Tween:Create(body, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
-        end
-    end
-
     -- Eventos Config
-    minCfg.MouseButton1Click:Connect(function()
-        toggleMinimize()
-    end)
-
     btnClsCfg.MouseButton1Click:Connect(function()
-        toggleMinimize()
+        gui.Parent = nil
+        Lib._settingsOpen = false
     end)
 
     tBtn.MouseButton1Click:Connect(function()
@@ -617,7 +568,7 @@ local function buildSettingsUI(anchorWin)
 
     -- Row: Tema de Cores Neon
     local rowColor = Instance.new("Frame", body)
-    rowColor.Size = UDim2.new(1,0,0,60)
+    rowColor.Size = UDim2.new(1,0,0,72)
     rowColor.BackgroundColor3 = Color3.fromRGB(16,18,28)
     rowColor.ZIndex = 11
     Instance.new("UICorner", rowColor).CornerRadius = UDim.new(0,10)
@@ -625,7 +576,7 @@ local function buildSettingsUI(anchorWin)
 
     local lbColor = Instance.new("TextLabel", rowColor)
     lbColor.BackgroundTransparency = 1
-    lbColor.Text = "🎨 THEME COLOR"
+    lbColor.Text = "🎨 NEON THEME"
     lbColor.Font = Enum.Font.GothamSemibold
     lbColor.TextScaled = true
     lbColor.TextXAlignment = Enum.TextXAlignment.Left
@@ -637,14 +588,14 @@ local function buildSettingsUI(anchorWin)
 
     local colorButtonsFrame = Instance.new("Frame", rowColor)
     colorButtonsFrame.BackgroundTransparency = 1
-    colorButtonsFrame.Position = UDim2.new(0, 12, 0, 24)
-    colorButtonsFrame.Size = UDim2.new(1, -24, 0, 28)
+    colorButtonsFrame.Position = UDim2.new(0, 10, 0, 26)
+    colorButtonsFrame.Size = UDim2.new(1, -20, 0, 40)
     colorButtonsFrame.ZIndex = 12
 
     local colorList = Instance.new("UIListLayout", colorButtonsFrame)
     colorList.FillDirection = Enum.FillDirection.Horizontal
-    colorList.HorizontalAlignment = Enum.HorizontalAlignment.Left
-    colorList.Padding = UDim.new(0,6)
+    colorList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    colorList.Padding = UDim.new(0,5)
     colorList.SortOrder = Enum.SortOrder.LayoutOrder
 
     -- Função para mudar cores
@@ -654,14 +605,30 @@ local function buildSettingsUI(anchorWin)
         saveSettings()
         
         -- Atualiza cores dos elementos
-        Tween:Create(st, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
-        Tween:Create(hs, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
-        Tween:Create(rcs, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
-        Tween:Create(rks, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
-        Tween:Create(rbs, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
-        Tween:Create(rds, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(st, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(hs, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(rcs, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(rks, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(rbs, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(rds, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
         
-        showToast("Color changed to " .. colorName .. "!")
+        -- Atualiza cores de FUNDO baseado na cor neon
+        local bgIntensity = 0.25
+        local darkBg = Color3.new(
+            math.max(0.03, colorValue.R * bgIntensity * 0.5),
+            math.max(0.04, colorValue.G * bgIntensity * 0.5),
+            math.max(0.07, colorValue.B * bgIntensity * 0.5)
+        )
+        local headerBg = Color3.new(
+            math.max(0.05, colorValue.R * bgIntensity * 0.4),
+            math.max(0.05, colorValue.G * bgIntensity * 0.4),
+            math.max(0.1, colorValue.B * bgIntensity * 0.4)
+        )
+        
+        Tween:Create(panel, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = darkBg}):Play()
+        Tween:Create(head, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = headerBg}):Play()
+        
+        showToast("Color: " .. colorName)
     end
 
     -- Criar botões de cores
@@ -671,28 +638,37 @@ local function buildSettingsUI(anchorWin)
         colorBtn.Font = Enum.Font.GothamBold
         colorBtn.TextScaled = true
         colorBtn.TextColor3 = Color3.fromRGB(250,251,255)
-        colorBtn.Size = UDim2.fromOffset(58, 26)
+        colorBtn.Size = UDim2.fromOffset(52, 30)
         colorBtn.AutoButtonColor = false
         colorBtn.ZIndex = 12
         colorBtn.BackgroundColor3 = Lib._neonColorName == colorName and colorValue or Color3.fromRGB(20,25,45)
         Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0,8)
-        local cbs = Instance.new("UIStroke", colorBtn); cbs.Transparency = 0.3; cbs.Color = colorValue; cbs.Thickness = 1
-        Instance.new("UITextSizeConstraint", colorBtn).MaxTextSize = 10
+        local cbs = Instance.new("UIStroke", colorBtn); cbs.Transparency = 0.2; cbs.Color = colorValue; cbs.Thickness = 1.5
+        Instance.new("UITextSizeConstraint", colorBtn).MaxTextSize = 9
         
         -- Hover effect
         colorBtn.MouseEnter:Connect(function()
             Tween:Create(colorBtn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = colorValue}):Play()
-            Tween:Create(cbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0}):Play()
+            Tween:Create(cbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0, Thickness = 2}):Play()
         end)
         colorBtn.MouseLeave:Connect(function()
             if Lib._neonColorName ~= colorName then
                 Tween:Create(colorBtn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,25,45)}):Play()
             end
-            Tween:Create(cbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.3}):Play()
+            Tween:Create(cbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.2, Thickness = 1.5}):Play()
         end)
         
         colorBtn.MouseButton1Click:Connect(function()
             changeNeonColor(colorName, colorValue)
+            
+            -- Atualiza visual do botão selecionado
+            for _, btn in pairs(colorButtonsFrame:GetChildren()) do
+                if btn:IsA("TextButton") then
+                    Tween:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        BackgroundColor3 = btn == colorBtn and colorValue or Color3.fromRGB(20,25,45)
+                    }):Play()
+                end
+            end
         end)
     end
 
@@ -1313,7 +1289,7 @@ function Lib:_spawnWindow(opts)
             task.wait(0.3)
         end
         
-        -- Destruir apenas essa janela, não todas
+        -- Destruir essa janela
         if gui and gui.Parent then
             pcall(function() gui:Destroy() end)
         end
@@ -1326,18 +1302,30 @@ function Lib:_spawnWindow(opts)
             end
         end
         
-        -- Se não tem mais windows, limpa refs
+        -- Se não tem mais windows, destroi TUDO
         if #Lib._openWindows == 0 then
             Lib._currentWinObj = nil
             Lib._currentGui = nil
-            destroyLauncher()
+            Lib._lastOpts = nil
             
+            -- Destroi launcher completamente
+            destroyLauncher()
+            Lib._launcherEnabled = false
+            Lib._showLauncher = false
+            
+            -- Destroi settings panel
             if Lib._settingsGui and Lib._settingsGui.Parent then
                 pcall(function() Lib._settingsGui:Destroy() end)
             end
             Lib._settingsGui = nil
             Lib._settingsOpen = false
             Lib._settingsWasOpen = false
+            
+            -- Desativa hotkey
+            if Lib._hotkeyConn then
+                Lib._hotkeyConn:Disconnect()
+                Lib._hotkeyConn = nil
+            end
         end
         
         Lib._destroyingFlag = false
