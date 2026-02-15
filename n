@@ -21,6 +21,7 @@ Lib._currentGui      = nil
 Lib._currentWinObj   = nil
 Lib._lastOpts        = nil
 Lib._openWindows     = {}
+Lib._destroyingFlag  = false
 
 Lib._launcherEnabled = true
 Lib._showLauncher    = (_G.SyniX_Settings and _G.SyniX_Settings.showLauncher) ~= false
@@ -43,28 +44,28 @@ Lib._discordLink = (_G.SyniX_Settings and _G.SyniX_Settings.discordLink)
 
 -- ===== Tema =====
 local DEFAULT_THEME = {
-    bg_window   = Color3.fromRGB(10,11,16),
-    bg_header   = Color3.fromRGB(15,16,24),
-    bg_panel    = Color3.fromRGB(12,13,20),
-    bg_sidebar  = Color3.fromRGB(11,12,18),
-    card        = Color3.fromRGB(20,22,32),
-    row         = Color3.fromRGB(18,20,30),
+    bg_window   = Color3.fromRGB(8,9,14),
+    bg_header   = Color3.fromRGB(13,14,22),
+    bg_panel    = Color3.fromRGB(10,11,18),
+    bg_sidebar  = Color3.fromRGB(9,10,16),
+    card        = Color3.fromRGB(18,20,30),
+    row         = Color3.fromRGB(16,18,28),
     card_hover  = Color3.fromRGB(25,27,40),
     row_hover   = Color3.fromRGB(22,25,38),
     stroke      = Color3.fromRGB(100,110,180),
-    text        = Color3.fromRGB(245,248,255),
+    text        = Color3.fromRGB(250,251,255),
     text_muted  = Color3.fromRGB(160,168,200),
-    accent      = Color3.fromRGB(100,150,255),
-    toggle_on   = Color3.fromRGB(100,150,255),
-    toggle_off  = Color3.fromRGB(50,55,75),
-    knob_on     = Color3.fromRGB(245,248,255),
+    accent      = Color3.fromRGB(110,160,255),
+    toggle_on   = Color3.fromRGB(110,160,255),
+    toggle_off  = Color3.fromRGB(45,50,70),
+    knob_on     = Color3.fromRGB(250,251,255),
     knob_off    = Color3.fromRGB(100,110,130),
-    sidebarWidth = 176,
+    sidebarWidth = 180,
     rowHeight    = 48,
     toggleSize   = Vector2.new(58,32),
     knobSize     = Vector2.new(26,26),
     sideIconSize = 20,
-    winSize      = UDim2.fromOffset(720,450),
+    winSize      = UDim2.fromOffset(780,500),
 }
 
 -- ===== Utils =====
@@ -171,17 +172,28 @@ local function ensureLauncher()
     local launcher = Instance.new("ImageButton")
     launcher.Name = "Launcher"
     launcher.Image = "rbxassetid://14862323455"
-    launcher.Size = UDim2.fromOffset(56,56)
-    launcher.Position = _G.SyniXLauncherPos or UDim2.new(0, 14, 1, -78)
-    launcher.BackgroundColor3 = Color3.fromRGB(20,25,45)
+    launcher.Size = UDim2.fromOffset(58,58)
+    launcher.Position = _G.SyniXLauncherPos or UDim2.new(0, 14, 1, -80)
+    launcher.BackgroundColor3 = Color3.fromRGB(18,22,42)
     launcher.BorderSizePixel = 0
-    launcher.AutoButtonColor = true
+    launcher.AutoButtonColor = false
     launcher.ZIndex = 1001
-    Instance.new("UICorner", launcher).CornerRadius = UDim.new(0,14)
-    local s = Instance.new("UIStroke", launcher); s.Transparency = 0.3; s.Color = Color3.fromRGB(100,150,255); s.Thickness = 1.5
+    Instance.new("UICorner", launcher).CornerRadius = UDim.new(0,16)
+    local s = Instance.new("UIStroke", launcher); s.Transparency = 0.25; s.Color = Color3.fromRGB(100,150,255); s.Thickness = 2
     launcher.Parent = gui
 
-    enableLauncherDrag(launcher)
+    -- Hover effect launcher
+    local launcherHovering = false
+    launcher.MouseEnter:Connect(function()
+        launcherHovering = true
+        Tween:Create(launcher, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(25,35,60)}):Play()
+        Tween:Create(s, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.1}):Play()
+    end)
+    launcher.MouseLeave:Connect(function()
+        launcherHovering = false
+        Tween:Create(launcher, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(18,22,42)}):Play()
+        Tween:Create(s, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.25}):Play()
+    end)
 
     launcher.MouseButton1Click:Connect(function()
         if Lib._currentGui and Lib._currentGui.Parent then
@@ -305,9 +317,18 @@ local function buildSettingsUI(anchorWin)
     minCfg.Position = UDim2.new(1,-40,0.5,-14)
     minCfg.BackgroundColor3 = Color3.fromRGB(25,28,42)
     minCfg.ZIndex = 12
-    minCfg.AutoButtonColor = true
+    minCfg.AutoButtonColor = false
     Instance.new("UICorner", minCfg).CornerRadius = UDim.new(0,8)
+    local mcs = Instance.new("UIStroke", minCfg); mcs.Transparency = 0.5; mcs.Color = Color3.fromRGB(100,130,200)
     Instance.new("UITextSizeConstraint", minCfg).MaxTextSize = 18
+    
+    -- Hover effect
+    minCfg.MouseEnter:Connect(function()
+        Tween:Create(minCfg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(35,42,65)}):Play()
+    end)
+    minCfg.MouseLeave:Connect(function()
+        Tween:Create(minCfg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(25,28,42)}):Play()
+    end)
 
     -- Corpo
     local body = Instance.new("Frame", panel)
@@ -344,14 +365,23 @@ local function buildSettingsUI(anchorWin)
     keyBtn.Text = Lib._minKey and Lib._minKey.Name or "M"
     keyBtn.Font = Enum.Font.GothamBold
     keyBtn.TextScaled = true
-    keyBtn.TextColor3 = Color3.fromRGB(12,13,20)
+    keyBtn.TextColor3 = Color3.fromRGB(10,11,16)
     keyBtn.ZIndex = 12
     keyBtn.Size = UDim2.fromOffset(88, 28)
     keyBtn.Position = UDim2.new(1, -100, 0.5, -14)
-    keyBtn.BackgroundColor3 = Color3.fromRGB(100,150,255)
-    keyBtn.AutoButtonColor = true
+    keyBtn.BackgroundColor3 = Color3.fromRGB(110,160,255)
+    keyBtn.AutoButtonColor = false
     Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0,8)
+    local kbs = Instance.new("UIStroke", keyBtn); kbs.Transparency = 0.3; kbs.Color = Color3.fromRGB(150,180,255)
     Instance.new("UITextSizeConstraint", keyBtn).MaxTextSize = 14
+    
+    -- Hover effect
+    keyBtn.MouseEnter:Connect(function()
+        Tween:Create(keyBtn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(130,170,255)}):Play()
+    end)
+    keyBtn.MouseLeave:Connect(function()
+        Tween:Create(keyBtn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(110,160,255)}):Play()
+    end)
 
     -- Row: Toggle launcher
     local rowBall = Instance.new("Frame", body)
@@ -378,42 +408,50 @@ local function buildSettingsUI(anchorWin)
     tBtn.AutoButtonColor = false
     tBtn.Size = UDim2.fromOffset(58, 28)
     tBtn.Position = UDim2.new(1, -70, 0.5, -14)
-    tBtn.BackgroundColor3 = Lib._showLauncher and Color3.fromRGB(100,150,255) or Color3.fromRGB(50,55,75)
+    tBtn.BackgroundColor3 = Lib._showLauncher and Color3.fromRGB(110,160,255) or Color3.fromRGB(45,50,70)
     tBtn.ZIndex = 12
     Instance.new("UICorner", tBtn).CornerRadius = UDim.new(1,0)
-    local ts = Instance.new("UIStroke", tBtn); ts.Transparency = 0.5; ts.Color = Color3.fromRGB(100,130,200)
+    local ts = Instance.new("UIStroke", tBtn); ts.Transparency = 0.4; ts.Color = Color3.fromRGB(100,150,255)
 
     local knob = Instance.new("Frame", tBtn)
     knob.Size = UDim2.fromOffset(24,24)
     knob.Position = Lib._showLauncher and UDim2.new(0, 32, 0.5, -12) or UDim2.new(0, 2, 0.5, -12)
-    knob.BackgroundColor3 = Lib._showLauncher and Color3.fromRGB(245,248,255) or Color3.fromRGB(100,110,130)
+    knob.BackgroundColor3 = Lib._showLauncher and Color3.fromRGB(250,251,255) or Color3.fromRGB(100,110,130)
     knob.ZIndex = 13
     Instance.new("UICorner", knob).CornerRadius = UDim.new(1,0)
 
     local function paintToggle(v)
-        Tween:Create(tBtn, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = v and Color3.fromRGB(100,150,255) or Color3.fromRGB(50,55,75)}):Play()
-        Tween:Create(knob, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Tween:Create(tBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = v and Color3.fromRGB(110,160,255) or Color3.fromRGB(45,50,70)}):Play()
+        Tween:Create(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Position = v and UDim2.new(0, 32, 0.5, -12) or UDim2.new(0, 2, 0.5, -12),
-            BackgroundColor3 = v and Color3.fromRGB(245,248,255) or Color3.fromRGB(100,110,130)
+            BackgroundColor3 = v and Color3.fromRGB(250,251,255) or Color3.fromRGB(100,110,130)
         }):Play()
     end
 
   -- Row: Link do Discord
     local rowDisc = Instance.new("TextButton", body)
     rowDisc.Text = ""
-    rowDisc.AutoButtonColor = true
+    rowDisc.AutoButtonColor = false
     rowDisc.Size = UDim2.new(1,0,0,36)
     rowDisc.BackgroundColor3 = Color3.fromRGB(20,25,45)
     rowDisc.ZIndex = 11
     Instance.new("UICorner", rowDisc).CornerRadius = UDim.new(0,10)
     local rds = Instance.new("UIStroke", rowDisc); rds.Transparency = 0.4; rds.Color = Color3.fromRGB(100,150,255)
+    
+    -- Hover effect
+    rowDisc.MouseEnter:Connect(function()
+        Tween:Create(rowDisc, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(28,38,65)}):Play()
+    end)
+    rowDisc.MouseLeave:Connect(function()
+        Tween:Create(rowDisc, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,25,45)}):Play()
+    end)
 
     local ic = Instance.new("ImageLabel", rowDisc)
     ic.BackgroundTransparency = 1
     ic.Image = "rbxassetid://131654640309321"
     ic.Size = UDim2.fromOffset(18,18)
-    ic.Position = UDim2.new(0, 10, 0.5, -9)
-    ic.ImageColor3 = Color3.fromRGB(235,235,240)
+    ic.Position = UDim2.new(0, 12, 0.5, -9)
+    ic.ImageColor3 = Color3.fromRGB(110,160,255)
     ic.ZIndex = 12
 
   local lbDisc = Instance.new("TextLabel", rowDisc)
@@ -664,6 +702,17 @@ local function makeTabAPI(def, containers, theme)
         lb.Position = UDim2.new(0, 10 + DEFAULT.sideIconSize + 10, 0, 4)
         lb.Size = UDim2.new(1, -(10 + DEFAULT.sideIconSize + 10 + 8), 1, -8)
         Instance.new("UITextSizeConstraint", lb).MaxTextSize = 14
+        
+        -- Hover effect
+        btn.MouseEnter:Connect(function()
+            Tween:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(28,32,50)}):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            if not btn:FindFirstAncestorOfClass("TextButton") then
+                Tween:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = DEFAULT_THEME.card}):Play()
+            end
+        end)
+        
         return btn
     end
     local function selectSide(sideBtn)
@@ -693,7 +742,7 @@ local function makeTabAPI(def, containers, theme)
         s.Text = text
         s.Font = Enum.Font.GothamBold
         s.TextXAlignment = Enum.TextXAlignment.Left
-        s.TextColor3 = Color3.fromRGB(100,150,255)
+        s.TextColor3 = Color3.fromRGB(110,160,255)
         s.TextScaled = true
         s.Size = UDim2.new(1,0,0,28)
         Instance.new("UITextSizeConstraint", s).MaxTextSize = 16
@@ -712,13 +761,13 @@ local function makeTabAPI(def, containers, theme)
         ico.Image = iconId or "rbxassetid://14862323455"
         ico.Size = UDim2.fromOffset(18,18)
         ico.Position = UDim2.new(0, 14, 0.5, -9)
-        ico.ImageColor3 = Color3.fromRGB(100,150,255)
+        ico.ImageColor3 = Color3.fromRGB(110,160,255)
 
         local label = Instance.new("TextLabel", row)
         label.BackgroundTransparency = 1
         label.Text = string.upper(labelText or "TOGGLE")
         label.Font = Enum.Font.GothamSemibold
-        label.TextColor3 = Color3.fromRGB(245,248,255)
+        label.TextColor3 = Color3.fromRGB(250,251,255)
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.TextScaled = true
         label.Position = UDim2.new(0, 40, 0, 2)
@@ -746,14 +795,22 @@ local function makeTabAPI(def, containers, theme)
         local value = default and true or false
         local function paint(v)
             if v then
-                Tween:Create(btn,  TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = DEFAULT.toggle_on}):Play()
-                Tween:Create(knob, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, onX, 0.5, -math.floor(DEFAULT.knobSize.Y/2)), BackgroundColor3 = Color3.fromRGB(20,22,32)}):Play()
+                Tween:Create(btn,  TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = DEFAULT.toggle_on}):Play()
+                Tween:Create(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, onX, 0.5, -math.floor(DEFAULT.knobSize.Y/2)), BackgroundColor3 = Color3.fromRGB(18,20,30)}):Play()
             else
-                Tween:Create(btn,  TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = DEFAULT.toggle_off}):Play()
-                Tween:Create(knob, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, offX, 0.5, -math.floor(DEFAULT.knobSize.Y/2)), BackgroundColor3 = DEFAULT.knob_off}):Play()
+                Tween:Create(btn,  TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = DEFAULT.toggle_off}):Play()
+                Tween:Create(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, offX, 0.5, -math.floor(DEFAULT.knobSize.Y/2)), BackgroundColor3 = DEFAULT.knob_off}):Play()
             end
         end
         paint(value)
+
+        -- Hover effect
+        row.MouseEnter:Connect(function()
+            Tween:Create(row, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,23,35)}):Play()
+        end)
+        row.MouseLeave:Connect(function()
+            Tween:Create(row, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = DEFAULT.row}):Play()
+        end)
 
         btn.MouseButton1Click:Connect(function()
             value = not value
@@ -770,7 +827,7 @@ local function makeTabAPI(def, containers, theme)
         row.Text = ""
         row.Size = UDim2.new(1, 0, 0, 46)
         row.BackgroundColor3 = Color3.fromRGB(20,25,45)
-        row.AutoButtonColor = true
+        row.AutoButtonColor = false
         Instance.new("UICorner", row).CornerRadius = UDim.new(0,10)
         local rs = Instance.new("UIStroke", row); rs.Transparency = 0.4; rs.Color = Color3.fromRGB(100,150,255)
 
@@ -791,6 +848,14 @@ local function makeTabAPI(def, containers, theme)
         lbl.Position = UDim2.new(0, 40, 0, 0)
         lbl.Size = UDim2.new(1, -40, 1, 0)
         Instance.new("UITextSizeConstraint", lbl).MaxTextSize = 14
+
+        -- Hover effect
+        row.MouseEnter:Connect(function()
+            Tween:Create(row, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(28,38,65)}):Play()
+        end)
+        row.MouseLeave:Connect(function()
+            Tween:Create(row, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,25,45)}):Play()
+        end)
 
         row.MouseButton1Click:Connect(function() if callback then task.spawn(callback) end end)
     end
@@ -817,14 +882,14 @@ local function makeTabAPI(def, containers, theme)
         ico.Image = iconId or "rbxassetid://14862323455"
         ico.Size = UDim2.fromOffset(18,18)
         ico.Position = UDim2.new(0, 14, 0.5, -9)
-        ico.ImageColor3 = Color3.fromRGB(100,150,255)
+        ico.ImageColor3 = Color3.fromRGB(110,160,255)
         ico.ZIndex = 2
 
         local label = Instance.new("TextLabel", cap)
         label.BackgroundTransparency = 1
         label.Text = string.upper(labelText or "DROPDOWN")
         label.Font = Enum.Font.GothamSemibold
-        label.TextColor3 = Color3.fromRGB(245,248,255)
+        label.TextColor3 = Color3.fromRGB(250,251,255)
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.TextScaled = true
         label.Position = UDim2.new(0, 40, 0, 2)
@@ -848,7 +913,7 @@ local function makeTabAPI(def, containers, theme)
         chevron.BackgroundTransparency = 1
         chevron.Text = "▼"
         chevron.Font = Enum.Font.GothamBold
-        chevron.TextColor3 = Color3.fromRGB(100,150,255)
+        chevron.TextColor3 = Color3.fromRGB(110,160,255)
         chevron.TextScaled = true
         chevron.Position = UDim2.new(1, -40, 0, 8)
         chevron.Size = UDim2.fromOffset(28, 28)
@@ -863,6 +928,18 @@ local function makeTabAPI(def, containers, theme)
         opts.ClipsDescendants = true
         opts.ZIndex = 1
         opts.CanvasSize = UDim2.new(0,0,0,0)
+
+        -- Hover effect
+        cap.InputBegan:Connect(function(i)
+            if i.UserInputType==Enum.UserInputType.MouseMovement then
+                Tween:Create(row, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,23,35)}):Play()
+            end
+        end)
+        cap.InputEnded:Connect(function(i)
+            if i.UserInputType==Enum.UserInputType.MouseMovement then
+                Tween:Create(row, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = DEFAULT.row}):Play()
+            end
+        end)
 
         local state = {
             items = items,
@@ -983,10 +1060,21 @@ function Lib:_spawnWindow(opts)
         b.TextScaled = true
         b.Font = Enum.Font.GothamBold
         b.TextColor3 = Color3.fromRGB(245,248,255)
-        b.AutoButtonColor = true
+        b.AutoButtonColor = false
         Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
         local bs = Instance.new("UIStroke", b); bs.Transparency = 0.5; bs.Color = Color3.fromRGB(100,130,200)
         Instance.new("UITextSizeConstraint", b).MaxTextSize = 18
+        
+        -- Hover effects
+        b.MouseEnter:Connect(function()
+            Tween:Create(b, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(30,45,85)}):Play()
+            Tween:Create(bs, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.2}):Play()
+        end)
+        b.MouseLeave:Connect(function()
+            Tween:Create(b, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,25,45)}):Play()
+            Tween:Create(bs, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.5}):Play()
+        end)
+        
         return b
     end
     local btnCls = mkHeadBtn("X"); btnCls.Parent = header; btnCls.Size = UDim2.fromOffset(36,32); btnCls.Position = UDim2.new(1,-44,0.5,-16)
@@ -1025,12 +1113,12 @@ function Lib:_spawnWindow(opts)
     pageTitle.BackgroundTransparency = 1
     pageTitle.Text = "| Home"
     pageTitle.Font = Enum.Font.GothamBlack
-    pageTitle.TextColor3 = Color3.fromRGB(245,248,255)
+    pageTitle.TextColor3 = Color3.fromRGB(250,251,255)
     pageTitle.TextScaled = true
     pageTitle.TextXAlignment = Enum.TextXAlignment.Left
     pageTitle.Position = UDim2.new(0, 12, 0, 10)
     pageTitle.Size = UDim2.new(1, -24, 0, 32)
-    Instance.new("UITextSizeConstraint", pageTitle).MaxTextSize = 24
+    Instance.new("UITextSizeConstraint", pageTitle).MaxTextSize = 26
 
     local containers = { sidebar = sidebar, content = content, pageTitle = pageTitle }
     local function MakeTab(def) return makeTabAPI(def, containers, theme) end
@@ -1040,20 +1128,45 @@ function Lib:_spawnWindow(opts)
 
     -- header buttons
     local function closeAll()
+        if Lib._destroyingFlag then return end
+        Lib._destroyingFlag = true
+        
+        -- Fade out animation
+        if gui and gui.Parent then
+            Tween:Create(gui, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+            task.wait(0.25)
+        end
+        
+        -- Destroy janelas
         for i=#Lib._openWindows,1,-1 do
             local g = Lib._openWindows[i]
-            if g and g.Parent then g:Destroy() end
+            if g and g.Parent then 
+                pcall(function() g:Destroy() end)
+            end
             table.remove(Lib._openWindows, i)
         end
+        
+        -- Cleanup refs
         Lib._currentWinObj = nil
         Lib._currentGui = nil
+        
+        -- Destroy launcher
         destroyLauncher()
+        
+        -- Destroy settings
         if Lib._settingsGui and Lib._settingsGui.Parent then
-            Lib._settingsGui.Enabled = false
-            Lib._settingsOpen = false
-            Lib._settingsWasOpen = false
+            pcall(function() Lib._settingsGui:Destroy() end)
         end
-        gui:Destroy()
+        Lib._settingsGui = nil
+        Lib._settingsOpen = false
+        Lib._settingsWasOpen = false
+        
+        -- Destroy main gui
+        if gui and gui.Parent then
+            pcall(function() gui:Destroy() end)
+        end
+        
+        Lib._destroyingFlag = false
     end
     btnMin.MouseButton1Click:Connect(function() Lib:_setMainVisible(false) end)
     btnCls.MouseButton1Click:Connect(closeAll)
