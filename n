@@ -1,4 +1,4 @@
--- SyniX Hub - VERSÃO PREMIUM (Visual Melhorado)
+-- SyniX Hub - VERSÃO PREMIUM 
 -- Mantém TODAS as funcionalidades originais
 -- Melhorias: Cores premium, animações suaves, tamanhos otimizados para mobile
 
