@@ -172,27 +172,25 @@ local function ensureLauncher()
     local launcher = Instance.new("ImageButton")
     launcher.Name = "Launcher"
     launcher.Image = "rbxassetid://14862323455"
-    launcher.Size = UDim2.fromOffset(58,58)
-    launcher.Position = _G.SyniXLauncherPos or UDim2.new(0, 14, 1, -80)
-    launcher.BackgroundColor3 = Color3.fromRGB(18,22,42)
+    launcher.Size = UDim2.fromOffset(62,62)
+    launcher.Position = _G.SyniXLauncherPos or UDim2.new(0, 14, 1, -82)
+    launcher.BackgroundColor3 = Color3.fromRGB(16,20,35)
     launcher.BorderSizePixel = 0
     launcher.AutoButtonColor = false
     launcher.ZIndex = 1001
-    Instance.new("UICorner", launcher).CornerRadius = UDim.new(0,16)
-    local s = Instance.new("UIStroke", launcher); s.Transparency = 0.25; s.Color = Color3.fromRGB(100,150,255); s.Thickness = 2
+    launcher.ImageColor3 = Color3.fromRGB(110,160,255)
+    Instance.new("UICorner", launcher).CornerRadius = UDim.new(0,18)
+    local s = Instance.new("UIStroke", launcher); s.Transparency = 0.2; s.Color = Color3.fromRGB(110,160,255); s.Thickness = 2.5
     launcher.Parent = gui
 
-    -- Hover effect launcher
-    local launcherHovering = false
+    -- Hover effect launcher com glow
     launcher.MouseEnter:Connect(function()
-        launcherHovering = true
-        Tween:Create(launcher, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(25,35,60)}):Play()
-        Tween:Create(s, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.1}):Play()
+        Tween:Create(launcher, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(30,55,120)}):Play()
+        Tween:Create(s, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.05, Thickness = 3}):Play()
     end)
     launcher.MouseLeave:Connect(function()
-        launcherHovering = false
-        Tween:Create(launcher, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(18,22,42)}):Play()
-        Tween:Create(s, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.25}):Play()
+        Tween:Create(launcher, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(16,20,35)}):Play()
+        Tween:Create(s, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.2, Thickness = 2.5}):Play()
     end)
 
     launcher.MouseButton1Click:Connect(function()
@@ -279,55 +277,79 @@ local function buildSettingsUI(anchorWin)
     -- Painel
     local panel = Instance.new("Frame")
     panel.Name = "Panel"
-    panel.Size = UDim2.fromOffset(340, 240)
-    panel.BackgroundColor3 = Color3.fromRGB(12,13,20)
+    panel.Size = UDim2.fromOffset(360, 260)
+    panel.BackgroundColor3 = Color3.fromRGB(10,11,18)
     panel.ZIndex = 10
     panel.Parent = gui
-    Instance.new("UICorner", panel).CornerRadius = UDim.new(0,16)
-    local st = Instance.new("UIStroke", panel); st.Color = Color3.fromRGB(100,130,200); st.Transparency = 0.4; st.Thickness = 1
+    Instance.new("UICorner", panel).CornerRadius = UDim.new(0,18)
+    local st = Instance.new("UIStroke", panel); st.Color = Color3.fromRGB(110,160,255); st.Transparency = 0.3; st.Thickness = 2
     enableDrag(panel, true)
 
     -- Header (só "-")
     local head = Instance.new("Frame", panel)
-    head.Size = UDim2.new(1, -16, 0, 45)
+    head.Size = UDim2.new(1, -16, 0, 50)
     head.Position = UDim2.new(0, 8, 0, 8)
-    head.BackgroundColor3 = Color3.fromRGB(16,18,28)
+    head.BackgroundColor3 = Color3.fromRGB(14,15,24)
     head.ZIndex = 11
-    Instance.new("UICorner", head).CornerRadius = UDim.new(0,12)
-    local hs = Instance.new("UIStroke", head); hs.Transparency = 0.6; hs.Color = Color3.fromRGB(100,130,200)
+    Instance.new("UICorner", head).CornerRadius = UDim.new(0,14)
+    local hs = Instance.new("UIStroke", head); hs.Transparency = 0.5; hs.Color = Color3.fromRGB(110,160,255); hs.Thickness = 1.5
 
     local title = Instance.new("TextLabel", head)
     title.BackgroundTransparency = 1
     title.Text = "⚙ SETTINGS"
     title.Font = Enum.Font.GothamBold
-    title.TextColor3 = Color3.fromRGB(245,248,255)
+    title.TextColor3 = Color3.fromRGB(250,251,255)
     title.TextScaled = true
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.ZIndex = 12
-    title.Position = UDim2.new(0, 12, 0, 4)
-    title.Size = UDim2.new(1, -60, 1, -8)
-    Instance.new("UITextSizeConstraint", title).MaxTextSize = 18
+    title.Position = UDim2.new(0, 14, 0, 4)
+    title.Size = UDim2.new(1, -70, 1, -8)
+    Instance.new("UITextSizeConstraint", title).MaxTextSize = 20
 
     local minCfg = Instance.new("TextButton", head)
     minCfg.Text = "-"
     minCfg.Font = Enum.Font.GothamBold
     minCfg.TextScaled = true
-    minCfg.TextColor3 = Color3.fromRGB(245,248,255)
-    minCfg.Size = UDim2.fromOffset(32,28)
-    minCfg.Position = UDim2.new(1,-40,0.5,-14)
-    minCfg.BackgroundColor3 = Color3.fromRGB(25,28,42)
+    minCfg.TextColor3 = Color3.fromRGB(250,251,255)
+    minCfg.Size = UDim2.fromOffset(36,32)
+    minCfg.Position = UDim2.new(1,-44,0.5,-16)
+    minCfg.BackgroundColor3 = Color3.fromRGB(22,26,45)
     minCfg.ZIndex = 12
     minCfg.AutoButtonColor = false
-    Instance.new("UICorner", minCfg).CornerRadius = UDim.new(0,8)
-    local mcs = Instance.new("UIStroke", minCfg); mcs.Transparency = 0.5; mcs.Color = Color3.fromRGB(100,130,200)
-    Instance.new("UITextSizeConstraint", minCfg).MaxTextSize = 18
+    Instance.new("UICorner", minCfg).CornerRadius = UDim.new(0,10)
+    local mcs = Instance.new("UIStroke", minCfg); mcs.Transparency = 0.4; mcs.Color = Color3.fromRGB(110,160,255); mcs.Thickness = 1.5
+    Instance.new("UITextSizeConstraint", minCfg).MaxTextSize = 20
     
     -- Hover effect
     minCfg.MouseEnter:Connect(function()
-        Tween:Create(minCfg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(35,42,65)}):Play()
+        Tween:Create(minCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(40,60,120)}):Play()
     end)
     minCfg.MouseLeave:Connect(function()
-        Tween:Create(minCfg, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(25,28,42)}):Play()
+        Tween:Create(minCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(22,26,45)}):Play()
+    end)
+
+    local btnClsCfg = Instance.new("TextButton", head)
+    btnClsCfg.Text = "✕"
+    btnClsCfg.Font = Enum.Font.GothamBold
+    btnClsCfg.TextScaled = true
+    btnClsCfg.TextColor3 = Color3.fromRGB(255,100,100)
+    btnClsCfg.Size = UDim2.fromOffset(36,32)
+    btnClsCfg.Position = UDim2.new(1,-8,0.5,-16)
+    btnClsCfg.BackgroundColor3 = Color3.fromRGB(35,20,20)
+    btnClsCfg.ZIndex = 12
+    btnClsCfg.AutoButtonColor = false
+    Instance.new("UICorner", btnClsCfg).CornerRadius = UDim.new(0,10)
+    local bcs = Instance.new("UIStroke", btnClsCfg); bcs.Transparency = 0.4; bcs.Color = Color3.fromRGB(220,100,100); bcs.Thickness = 1.5
+    Instance.new("UITextSizeConstraint", btnClsCfg).MaxTextSize = 18
+    
+    -- Hover effect with red glow
+    btnClsCfg.MouseEnter:Connect(function()
+        Tween:Create(btnClsCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(60,25,25)}):Play()
+        Tween:Create(bcs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 2.5}):Play()
+    end)
+    btnClsCfg.MouseLeave:Connect(function()
+        Tween:Create(btnClsCfg, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(35,20,20)}):Play()
+        Tween:Create(bcs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 1.5}):Play()
     end)
 
     -- Corpo
@@ -347,7 +369,7 @@ local function buildSettingsUI(anchorWin)
     rowKey.BackgroundColor3 = Color3.fromRGB(16,18,28)
     rowKey.ZIndex = 11
     Instance.new("UICorner", rowKey).CornerRadius = UDim.new(0,10)
-    local rks = Instance.new("UIStroke", rowKey); rks.Transparency = 0.6; rks.Color = Color3.fromRGB(100,130,200)
+    local rks = Instance.new("UIStroke", rowKey); rks.Transparency = 0.5; rks.Color = Color3.fromRGB(110,160,255); rks.Thickness = 1
 
     local lbKey = Instance.new("TextLabel", rowKey)
     lbKey.BackgroundTransparency = 1
@@ -372,15 +394,17 @@ local function buildSettingsUI(anchorWin)
     keyBtn.BackgroundColor3 = Color3.fromRGB(110,160,255)
     keyBtn.AutoButtonColor = false
     Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0,8)
-    local kbs = Instance.new("UIStroke", keyBtn); kbs.Transparency = 0.3; kbs.Color = Color3.fromRGB(150,180,255)
+    local kbs = Instance.new("UIStroke", keyBtn); kbs.Transparency = 0.3; kbs.Color = Color3.fromRGB(150,180,255); kbs.Thickness = 1.5
     Instance.new("UITextSizeConstraint", keyBtn).MaxTextSize = 14
     
     -- Hover effect
     keyBtn.MouseEnter:Connect(function()
-        Tween:Create(keyBtn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(130,170,255)}):Play()
+        Tween:Create(keyBtn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(130,170,255)}):Play()
+        Tween:Create(kbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 2}):Play()
     end)
     keyBtn.MouseLeave:Connect(function()
-        Tween:Create(keyBtn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(110,160,255)}):Play()
+        Tween:Create(keyBtn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(110,160,255)}):Play()
+        Tween:Create(kbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 1.5}):Play()
     end)
 
     -- Row: Toggle launcher
@@ -389,7 +413,7 @@ local function buildSettingsUI(anchorWin)
     rowBall.BackgroundColor3 = Color3.fromRGB(16,18,28)
     rowBall.ZIndex = 11
     Instance.new("UICorner", rowBall).CornerRadius = UDim.new(0,10)
-    local rbs = Instance.new("UIStroke", rowBall); rbs.Transparency = 0.6; rbs.Color = Color3.fromRGB(100,130,200)
+    local rbs = Instance.new("UIStroke", rowBall); rbs.Transparency = 0.5; rbs.Color = Color3.fromRGB(110,160,255); rbs.Thickness = 1
 
     local lbBall = Instance.new("TextLabel", rowBall)
     lbBall.BackgroundTransparency = 1
@@ -411,7 +435,7 @@ local function buildSettingsUI(anchorWin)
     tBtn.BackgroundColor3 = Lib._showLauncher and Color3.fromRGB(110,160,255) or Color3.fromRGB(45,50,70)
     tBtn.ZIndex = 12
     Instance.new("UICorner", tBtn).CornerRadius = UDim.new(1,0)
-    local ts = Instance.new("UIStroke", tBtn); ts.Transparency = 0.4; ts.Color = Color3.fromRGB(100,150,255)
+    local ts = Instance.new("UIStroke", tBtn); ts.Transparency = 0.3; ts.Color = Lib._showLauncher and Color3.fromRGB(150,180,255) or Color3.fromRGB(100,120,160); ts.Thickness = 1.5
 
     local knob = Instance.new("Frame", tBtn)
     knob.Size = UDim2.fromOffset(24,24)
@@ -422,6 +446,7 @@ local function buildSettingsUI(anchorWin)
 
     local function paintToggle(v)
         Tween:Create(tBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = v and Color3.fromRGB(110,160,255) or Color3.fromRGB(45,50,70)}):Play()
+        Tween:Create(ts, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = v and Color3.fromRGB(150,180,255) or Color3.fromRGB(100,120,160)}):Play()
         Tween:Create(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Position = v and UDim2.new(0, 32, 0.5, -12) or UDim2.new(0, 2, 0.5, -12),
             BackgroundColor3 = v and Color3.fromRGB(250,251,255) or Color3.fromRGB(100,110,130)
@@ -429,21 +454,23 @@ local function buildSettingsUI(anchorWin)
     end
 
   -- Row: Link do Discord
-    local rowDisc = Instance.new("TextButton", body)
+  local rowDisc = Instance.new("TextButton", body)
     rowDisc.Text = ""
     rowDisc.AutoButtonColor = false
     rowDisc.Size = UDim2.new(1,0,0,36)
     rowDisc.BackgroundColor3 = Color3.fromRGB(20,25,45)
     rowDisc.ZIndex = 11
     Instance.new("UICorner", rowDisc).CornerRadius = UDim.new(0,10)
-    local rds = Instance.new("UIStroke", rowDisc); rds.Transparency = 0.4; rds.Color = Color3.fromRGB(100,150,255)
+    local rds = Instance.new("UIStroke", rowDisc); rds.Transparency = 0.35; rds.Color = Color3.fromRGB(120,160,255); rds.Thickness = 1.5
     
     -- Hover effect
     rowDisc.MouseEnter:Connect(function()
-        Tween:Create(rowDisc, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(28,38,65)}):Play()
+        Tween:Create(rowDisc, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(28,38,65)}):Play()
+        Tween:Create(rds, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 2, Color = Color3.fromRGB(150,180,255)}):Play()
     end)
     rowDisc.MouseLeave:Connect(function()
-        Tween:Create(rowDisc, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,25,45)}):Play()
+        Tween:Create(rowDisc, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,25,45)}):Play()
+        Tween:Create(rds, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 1.5, Color = Color3.fromRGB(120,160,255)}):Play()
     end)
 
     local ic = Instance.new("ImageLabel", rowDisc)
@@ -493,6 +520,11 @@ local function buildSettingsUI(anchorWin)
     -- Eventos Config
     minCfg.MouseButton1Click:Connect(function()
         gui.Enabled = false
+        Lib._settingsOpen = false
+    end)
+
+    btnClsCfg.MouseButton1Click:Connect(function()
+        gui.Parent = nil
         Lib._settingsOpen = false
     end)
 
@@ -1004,8 +1036,10 @@ function Lib:_spawnWindow(opts)
 
     if not (opts and opts.multi) then
         if Lib._currentGui and Lib._currentGui.Parent then
-            Lib._currentGui.Enabled = true
-            return Lib._currentWinObj
+            if Lib._currentGui ~= gui then
+                Lib._currentGui.Enabled = true
+                return Lib._currentWinObj
+            end
         end
     end
 
@@ -1020,8 +1054,8 @@ function Lib:_spawnWindow(opts)
     win.Name = "Window"
     win.Size = theme.winSize
     win.BackgroundColor3 = theme.bg_window
-    Instance.new("UICorner", win).CornerRadius = UDim.new(0,16)
-    local wS = Instance.new("UIStroke", win); wS.Color=Color3.fromRGB(100,130,200); wS.Transparency=0.3; wS.Thickness=1.5
+    Instance.new("UICorner", win).CornerRadius = UDim.new(0,18)
+    local wS = Instance.new("UIStroke", win); wS.Color=Color3.fromRGB(110,160,255); wS.Transparency=0.25; wS.Thickness=2
     win.Parent = gui
     enableDrag(win, true)
 
@@ -1029,18 +1063,25 @@ function Lib:_spawnWindow(opts)
     local header = Instance.new("Frame")
     header.Parent = win
     header.BackgroundColor3 = theme.bg_header
-    header.Size = UDim2.new(1, -16, 0, 54)
+    header.Size = UDim2.new(1, -16, 0, 60)
     header.Position = UDim2.new(0, 8, 0, 8)
     header.BorderSizePixel = 0
-    Instance.new("UICorner", header).CornerRadius = UDim.new(0,12)
-    local hs = Instance.new("UIStroke", header); hs.Color = Color3.fromRGB(100,130,200); hs.Transparency = 0.4; hs.Thickness = 1
+    Instance.new("UICorner", header).CornerRadius = UDim.new(0,14)
+    local hs = Instance.new("UIStroke", header); hs.Color = Color3.fromRGB(110,160,255); hs.Transparency = 0.35; hs.Thickness = 1.5
 
     local hIcon = Instance.new("ImageLabel", header)
     hIcon.BackgroundTransparency = 1
     hIcon.Image = "rbxassetid://14862323455"
-    hIcon.Size = UDim2.fromOffset(24,24)
-    hIcon.Position = UDim2.new(0, 12, 0.5, -12)
-    hIcon.ImageColor3 = Color3.fromRGB(100,150,255)
+    hIcon.Size = UDim2.fromOffset(32,32)
+    hIcon.Position = UDim2.new(0, 10, 0.5, -16)
+    hIcon.ImageColor3 = Color3.fromRGB(110,160,255)
+    
+    -- Glow effect no ícone
+    local glow = Instance.new("UIGradient", hIcon)
+    glow.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(110,160,255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(80,130,220))
+    })
 
     local hTitle = Instance.new("TextLabel", header)
     hTitle.BackgroundTransparency = 1
@@ -1048,31 +1089,31 @@ function Lib:_spawnWindow(opts)
     hTitle.Font = Enum.Font.GothamBold
     hTitle.TextScaled = true
     hTitle.TextXAlignment = Enum.TextXAlignment.Left
-    hTitle.TextColor3 = Color3.fromRGB(245,248,255)
-    hTitle.Position = UDim2.new(0, 44, 0, 4)
-    hTitle.Size = UDim2.new(1, -200, 1, -8)
-    Instance.new("UITextSizeConstraint", hTitle).MaxTextSize = 22
+    hTitle.TextColor3 = Color3.fromRGB(250,251,255)
+    hTitle.Position = UDim2.new(0, 50, 0, 4)
+    hTitle.Size = UDim2.new(1, -220, 1, -8)
+    Instance.new("UITextSizeConstraint", hTitle).MaxTextSize = 24
 
     local function mkHeadBtn(txt)
         local b = Instance.new("TextButton")
-        b.BackgroundColor3 = Color3.fromRGB(20,25,45)
+        b.BackgroundColor3 = Color3.fromRGB(18,23,40)
         b.Text = txt
         b.TextScaled = true
         b.Font = Enum.Font.GothamBold
-        b.TextColor3 = Color3.fromRGB(245,248,255)
+        b.TextColor3 = Color3.fromRGB(250,251,255)
         b.AutoButtonColor = false
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
-        local bs = Instance.new("UIStroke", b); bs.Transparency = 0.5; bs.Color = Color3.fromRGB(100,130,200)
-        Instance.new("UITextSizeConstraint", b).MaxTextSize = 18
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
+        local bs = Instance.new("UIStroke", b); bs.Transparency = 0.4; bs.Color = Color3.fromRGB(110,160,255); bs.Thickness = 1.5
+        Instance.new("UITextSizeConstraint", b).MaxTextSize = 20
         
-        -- Hover effects
+        -- Hover effects com glow
         b.MouseEnter:Connect(function()
-            Tween:Create(b, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(30,45,85)}):Play()
-            Tween:Create(bs, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.2}):Play()
+            Tween:Create(b, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(35,60,120)}):Play()
+            Tween:Create(bs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.1, Thickness = 2}):Play()
         end)
         b.MouseLeave:Connect(function()
-            Tween:Create(b, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,25,45)}):Play()
-            Tween:Create(bs, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.5}):Play()
+            Tween:Create(b, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(18,23,40)}):Play()
+            Tween:Create(bs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.4, Thickness = 1.5}):Play()
         end)
         
         return b
@@ -1084,17 +1125,17 @@ function Lib:_spawnWindow(opts)
     -- Body
     local body = Instance.new("Frame", win)
     body.BackgroundTransparency = 1
-    body.Position = UDim2.new(0, 8, 0, 70)
-    body.Size = UDim2.new(1, -16, 1, -82)
+    body.Position = UDim2.new(0, 8, 0, 76)
+    body.Size = UDim2.new(1, -16, 1, -88)
 
     local sidebar = Instance.new("ScrollingFrame", body)
     sidebar.Name = "Sidebar"
     sidebar.BackgroundColor3 = DEFAULT_THEME.bg_sidebar
     sidebar.Size = UDim2.new(0, theme.sidebarWidth, 1, 0)
-    sidebar.ScrollBarThickness = 4
+    sidebar.ScrollBarThickness = 5
     sidebar.CanvasSize = UDim2.new(0,0,0,0)
-    Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0,12)
-    local sbs = Instance.new("UIStroke", sidebar); sbs.Transparency = 0.5; sbs.Color = Color3.fromRGB(100,130,200)
+    Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0,14)
+    local sbs = Instance.new("UIStroke", sidebar); sbs.Transparency = 0.45; sbs.Color = Color3.fromRGB(110,160,255); sbs.Thickness = 1.5
     local sList = Instance.new("UIListLayout", sidebar)
     sList.Padding = UDim.new(0,6)
     sList.SortOrder = Enum.SortOrder.LayoutOrder
@@ -1106,8 +1147,8 @@ function Lib:_spawnWindow(opts)
     content.BackgroundColor3 = DEFAULT_THEME.bg_panel
     content.Size = UDim2.new(1, -(theme.sidebarWidth+8), 1, 0)
     content.Position = UDim2.new(0, theme.sidebarWidth+8, 0, 0)
-    Instance.new("UICorner", content).CornerRadius = UDim.new(0,12)
-    local cs = Instance.new("UIStroke", content); cs.Transparency = 0.5; cs.Color = Color3.fromRGB(100,130,200)
+    Instance.new("UICorner", content).CornerRadius = UDim.new(0,14)
+    local cs = Instance.new("UIStroke", content); cs.Transparency = 0.45; cs.Color = Color3.fromRGB(110,160,255); cs.Thickness = 1.5
 
     local pageTitle = Instance.new("TextLabel", content)
     pageTitle.BackgroundTransparency = 1
@@ -1132,45 +1173,51 @@ function Lib:_spawnWindow(opts)
         Lib._destroyingFlag = true
         
         -- Fade out animation
-        if gui and gui.Parent then
-            Tween:Create(gui, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
-            task.wait(0.25)
+        if win and win.Parent then
+            Tween:Create(win, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)}):Play()
+            task.wait(0.3)
         end
         
-        -- Destroy janelas
-        for i=#Lib._openWindows,1,-1 do
-            local g = Lib._openWindows[i]
-            if g and g.Parent then 
-                pcall(function() g:Destroy() end)
-            end
-            table.remove(Lib._openWindows, i)
-        end
-        
-        -- Cleanup refs
-        Lib._currentWinObj = nil
-        Lib._currentGui = nil
-        
-        -- Destroy launcher
-        destroyLauncher()
-        
-        -- Destroy settings
-        if Lib._settingsGui and Lib._settingsGui.Parent then
-            pcall(function() Lib._settingsGui:Destroy() end)
-        end
-        Lib._settingsGui = nil
-        Lib._settingsOpen = false
-        Lib._settingsWasOpen = false
-        
-        -- Destroy main gui
+        -- Destruir apenas essa janela, não todas
         if gui and gui.Parent then
             pcall(function() gui:Destroy() end)
         end
         
+        -- Remove da lista de windows
+        for i=#Lib._openWindows,1,-1 do
+            if Lib._openWindows[i] == gui then
+                table.remove(Lib._openWindows, i)
+                break
+            end
+        end
+        
+        -- Se não tem mais windows, limpa refs
+        if #Lib._openWindows == 0 then
+            Lib._currentWinObj = nil
+            Lib._currentGui = nil
+            destroyLauncher()
+            
+            if Lib._settingsGui and Lib._settingsGui.Parent then
+                pcall(function() Lib._settingsGui:Destroy() end)
+            end
+            Lib._settingsGui = nil
+            Lib._settingsOpen = false
+            Lib._settingsWasOpen = false
+        end
+        
         Lib._destroyingFlag = false
     end
-    btnMin.MouseButton1Click:Connect(function() Lib:_setMainVisible(false) end)
-    btnCls.MouseButton1Click:Connect(closeAll)
-    btnCfg.MouseButton1Click:Connect(function() Lib:_toggleSettings(win) end)
+    btnMin.MouseButton1Click:Connect(function() 
+        Lib:_setMainVisible(false) 
+    end)
+    btnCls.MouseButton1Click:Connect(function() 
+        if not Lib._destroyingFlag then
+            closeAll()
+        end
+    end)
+    btnCfg.MouseButton1Click:Connect(function() 
+        Lib:_toggleSettings(win) 
+    end)
 
     -- win obj
     local winObj = {}
