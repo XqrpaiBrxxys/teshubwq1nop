@@ -42,6 +42,21 @@ Lib._discordLink = (_G.SyniX_Settings and _G.SyniX_Settings.discordLink)
                 or _G.SyniX_DiscordInvite
                 or "https://discord.gg/BvQ8F4ux7h"
 
+-- Cores Neon disponíveis
+local NEON_COLORS = {
+    ["🔵 Azul"] = Color3.fromRGB(110,160,255),
+    ["🟣 Roxo"] = Color3.fromRGB(180,100,255),
+    ["🔴 Rosa"] = Color3.fromRGB(255,100,180),
+    ["🟢 Verde"] = Color3.fromRGB(100,255,150),
+    ["🟡 Ciano"] = Color3.fromRGB(100,255,255),
+    ["🟠 Laranja"] = Color3.fromRGB(255,160,80),
+}
+
+-- Cor neon selecionada
+local defaultNeonName = (_G.SyniX_Settings and _G.SyniX_Settings.neonColor) or "🔵 Azul"
+Lib._neonColor = NEON_COLORS[defaultNeonName] or Color3.fromRGB(110,160,255)
+Lib._neonColorName = defaultNeonName
+
 -- ===== Tema =====
 local DEFAULT_THEME = {
     bg_window   = Color3.fromRGB(8,9,14),
@@ -144,6 +159,7 @@ local function saveSettings()
     _G.SyniX_Settings.minKeyName  = Lib._minKey and Lib._minKey.Name or "M"
     _G.SyniX_Settings.showLauncher= (Lib._showLauncher ~= false)
     _G.SyniX_Settings.discordLink = Lib._discordLink
+    _G.SyniX_Settings.neonColor   = Lib._neonColorName
 end
 
 -- ===== Launcher =====
@@ -274,16 +290,32 @@ local function buildSettingsUI(anchorWin)
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     gui.Parent = player:WaitForChild("PlayerGui")
 
+    -- Shadow do painel
+    local shadow = Instance.new("Frame")
+    shadow.Name = "Shadow"
+    shadow.Size = UDim2.fromOffset(364, 344)
+    shadow.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    shadow.BackgroundTransparency = 0.6
+    shadow.ZIndex = 9
+    shadow.Parent = gui
+    Instance.new("UICorner", shadow).CornerRadius = UDim.new(0,20)
+
     -- Painel
     local panel = Instance.new("Frame")
     panel.Name = "Panel"
-    panel.Size = UDim2.fromOffset(360, 260)
+    panel.Size = UDim2.fromOffset(360, 340)
     panel.BackgroundColor3 = Color3.fromRGB(10,11,18)
     panel.ZIndex = 10
     panel.Parent = gui
     Instance.new("UICorner", panel).CornerRadius = UDim.new(0,18)
-    local st = Instance.new("UIStroke", panel); st.Color = Color3.fromRGB(110,160,255); st.Transparency = 0.3; st.Thickness = 2
+    local st = Instance.new("UIStroke", panel); st.Color = Lib._neonColor; st.Transparency = 0.3; st.Thickness = 2
     enableDrag(panel, true)
+    
+    -- Animação de entrada
+    panel.Size = UDim2.fromOffset(360, 0)
+    shadow.Size = UDim2.fromOffset(364, 0)
+    Tween:Create(panel, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(360, 340)}):Play()
+    Tween:Create(shadow, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(364, 344)}):Play()
 
     -- Header (só "-")
     local head = Instance.new("Frame", panel)
@@ -292,11 +324,11 @@ local function buildSettingsUI(anchorWin)
     head.BackgroundColor3 = Color3.fromRGB(14,15,24)
     head.ZIndex = 11
     Instance.new("UICorner", head).CornerRadius = UDim.new(0,14)
-    local hs = Instance.new("UIStroke", head); hs.Transparency = 0.5; hs.Color = Color3.fromRGB(110,160,255); hs.Thickness = 1.5
+    local hs = Instance.new("UIStroke", head); hs.Transparency = 0.5; hs.Color = Lib._neonColor; hs.Thickness = 1.5
 
     local title = Instance.new("TextLabel", head)
     title.BackgroundTransparency = 1
-    title.Text = "⚙ SETTINGS"
+    title.Text = "✨ SETTINGS"
     title.Font = Enum.Font.GothamBold
     title.TextColor3 = Color3.fromRGB(250,251,255)
     title.TextScaled = true
@@ -352,6 +384,9 @@ local function buildSettingsUI(anchorWin)
         Tween:Create(bcs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Thickness = 1.5}):Play()
     end)
 
+    -- Estado de minimização
+    local isMinimized = false
+
     -- Corpo
     local body = Instance.new("Frame", panel)
     body.BackgroundTransparency = 1
@@ -369,7 +404,7 @@ local function buildSettingsUI(anchorWin)
     rowKey.BackgroundColor3 = Color3.fromRGB(16,18,28)
     rowKey.ZIndex = 11
     Instance.new("UICorner", rowKey).CornerRadius = UDim.new(0,10)
-    local rks = Instance.new("UIStroke", rowKey); rks.Transparency = 0.5; rks.Color = Color3.fromRGB(110,160,255); rks.Thickness = 1
+    local rks = Instance.new("UIStroke", rowKey); rks.Transparency = 0.5; rks.Color = Lib._neonColor; rks.Thickness = 1
 
     local lbKey = Instance.new("TextLabel", rowKey)
     lbKey.BackgroundTransparency = 1
@@ -391,7 +426,7 @@ local function buildSettingsUI(anchorWin)
     keyBtn.ZIndex = 12
     keyBtn.Size = UDim2.fromOffset(88, 28)
     keyBtn.Position = UDim2.new(1, -100, 0.5, -14)
-    keyBtn.BackgroundColor3 = Color3.fromRGB(110,160,255)
+    keyBtn.BackgroundColor3 = Lib._neonColor
     keyBtn.AutoButtonColor = false
     Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0,8)
     local kbs = Instance.new("UIStroke", keyBtn); kbs.Transparency = 0.3; kbs.Color = Color3.fromRGB(150,180,255); kbs.Thickness = 1.5
@@ -413,7 +448,7 @@ local function buildSettingsUI(anchorWin)
     rowBall.BackgroundColor3 = Color3.fromRGB(16,18,28)
     rowBall.ZIndex = 11
     Instance.new("UICorner", rowBall).CornerRadius = UDim.new(0,10)
-    local rbs = Instance.new("UIStroke", rowBall); rbs.Transparency = 0.5; rbs.Color = Color3.fromRGB(110,160,255); rbs.Thickness = 1
+    local rbs = Instance.new("UIStroke", rowBall); rbs.Transparency = 0.5; rbs.Color = Lib._neonColor; rbs.Thickness = 1
 
     local lbBall = Instance.new("TextLabel", rowBall)
     lbBall.BackgroundTransparency = 1
@@ -432,7 +467,7 @@ local function buildSettingsUI(anchorWin)
     tBtn.AutoButtonColor = false
     tBtn.Size = UDim2.fromOffset(58, 28)
     tBtn.Position = UDim2.new(1, -70, 0.5, -14)
-    tBtn.BackgroundColor3 = Lib._showLauncher and Color3.fromRGB(110,160,255) or Color3.fromRGB(45,50,70)
+    tBtn.BackgroundColor3 = Lib._showLauncher and Lib._neonColor or Color3.fromRGB(45,50,70)
     tBtn.ZIndex = 12
     Instance.new("UICorner", tBtn).CornerRadius = UDim.new(1,0)
     local ts = Instance.new("UIStroke", tBtn); ts.Transparency = 0.3; ts.Color = Lib._showLauncher and Color3.fromRGB(150,180,255) or Color3.fromRGB(100,120,160); ts.Thickness = 1.5
@@ -445,7 +480,7 @@ local function buildSettingsUI(anchorWin)
     Instance.new("UICorner", knob).CornerRadius = UDim.new(1,0)
 
     local function paintToggle(v)
-        Tween:Create(tBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = v and Color3.fromRGB(110,160,255) or Color3.fromRGB(45,50,70)}):Play()
+        Tween:Create(tBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = v and Lib._neonColor or Color3.fromRGB(45,50,70)}):Play()
         Tween:Create(ts, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = v and Color3.fromRGB(150,180,255) or Color3.fromRGB(100,120,160)}):Play()
         Tween:Create(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Position = v and UDim2.new(0, 32, 0.5, -12) or UDim2.new(0, 2, 0.5, -12),
@@ -461,7 +496,7 @@ local function buildSettingsUI(anchorWin)
     rowDisc.BackgroundColor3 = Color3.fromRGB(20,25,45)
     rowDisc.ZIndex = 11
     Instance.new("UICorner", rowDisc).CornerRadius = UDim.new(0,10)
-    local rds = Instance.new("UIStroke", rowDisc); rds.Transparency = 0.35; rds.Color = Color3.fromRGB(120,160,255); rds.Thickness = 1.5
+    local rds = Instance.new("UIStroke", rowDisc); rds.Transparency = 0.35; rds.Color = Lib._neonColor; rds.Thickness = 1.5
     
     -- Hover effect
     rowDisc.MouseEnter:Connect(function()
@@ -517,15 +552,34 @@ local function buildSettingsUI(anchorWin)
         end)
     end
 
+    -- Função de minimizar/maximizar
+    local function toggleMinimize()
+        isMinimized = not isMinimized
+        if isMinimized then
+            -- Minimizar: esconde body, reduz altura
+            Tween:Create(body, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+            body.Visible = false
+            minCfg.Text = "+"
+            Tween:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(360, 66)}):Play()
+            Tween:Create(shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(364, 70)}):Play()
+        else
+            -- Maximizar: mostra body, aumenta altura
+            body.Visible = true
+            minCfg.Text = "-"
+            Tween:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(360, 340)}):Play()
+            Tween:Create(shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(364, 344)}):Play()
+            task.wait(0.15)
+            Tween:Create(body, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+        end
+    end
+
     -- Eventos Config
     minCfg.MouseButton1Click:Connect(function()
-        gui.Enabled = false
-        Lib._settingsOpen = false
+        toggleMinimize()
     end)
 
     btnClsCfg.MouseButton1Click:Connect(function()
-        gui.Parent = nil
-        Lib._settingsOpen = false
+        toggleMinimize()
     end)
 
     tBtn.MouseButton1Click:Connect(function()
@@ -560,6 +614,87 @@ local function buildSettingsUI(anchorWin)
         CopyDiscordLink()
         showToast("Discord link copied!")
     end)
+
+    -- Row: Tema de Cores Neon
+    local rowColor = Instance.new("Frame", body)
+    rowColor.Size = UDim2.new(1,0,0,60)
+    rowColor.BackgroundColor3 = Color3.fromRGB(16,18,28)
+    rowColor.ZIndex = 11
+    Instance.new("UICorner", rowColor).CornerRadius = UDim.new(0,10)
+    local rcs = Instance.new("UIStroke", rowColor); rcs.Transparency = 0.5; rcs.Color = Lib._neonColor; rcs.Thickness = 1
+
+    local lbColor = Instance.new("TextLabel", rowColor)
+    lbColor.BackgroundTransparency = 1
+    lbColor.Text = "🎨 THEME COLOR"
+    lbColor.Font = Enum.Font.GothamSemibold
+    lbColor.TextScaled = true
+    lbColor.TextXAlignment = Enum.TextXAlignment.Left
+    lbColor.TextColor3 = Color3.fromRGB(250,251,255)
+    lbColor.ZIndex = 12
+    lbColor.Position = UDim2.new(0, 12, 0, 2)
+    lbColor.Size = UDim2.new(1, -24, 0, 20)
+    Instance.new("UITextSizeConstraint", lbColor).MaxTextSize = 14
+
+    local colorButtonsFrame = Instance.new("Frame", rowColor)
+    colorButtonsFrame.BackgroundTransparency = 1
+    colorButtonsFrame.Position = UDim2.new(0, 12, 0, 24)
+    colorButtonsFrame.Size = UDim2.new(1, -24, 0, 28)
+    colorButtonsFrame.ZIndex = 12
+
+    local colorList = Instance.new("UIListLayout", colorButtonsFrame)
+    colorList.FillDirection = Enum.FillDirection.Horizontal
+    colorList.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    colorList.Padding = UDim.new(0,6)
+    colorList.SortOrder = Enum.SortOrder.LayoutOrder
+
+    -- Função para mudar cores
+    local function changeNeonColor(colorName, colorValue)
+        Lib._neonColorName = colorName
+        Lib._neonColor = colorValue
+        saveSettings()
+        
+        -- Atualiza cores dos elementos
+        Tween:Create(st, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(hs, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(rcs, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(rks, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(rbs, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        Tween:Create(rds, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+        
+        showToast("Color changed to " .. colorName .. "!")
+    end
+
+    -- Criar botões de cores
+    for colorName, colorValue in pairs(NEON_COLORS) do
+        local colorBtn = Instance.new("TextButton", colorButtonsFrame)
+        colorBtn.Text = colorName
+        colorBtn.Font = Enum.Font.GothamBold
+        colorBtn.TextScaled = true
+        colorBtn.TextColor3 = Color3.fromRGB(250,251,255)
+        colorBtn.Size = UDim2.fromOffset(58, 26)
+        colorBtn.AutoButtonColor = false
+        colorBtn.ZIndex = 12
+        colorBtn.BackgroundColor3 = Lib._neonColorName == colorName and colorValue or Color3.fromRGB(20,25,45)
+        Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0,8)
+        local cbs = Instance.new("UIStroke", colorBtn); cbs.Transparency = 0.3; cbs.Color = colorValue; cbs.Thickness = 1
+        Instance.new("UITextSizeConstraint", colorBtn).MaxTextSize = 10
+        
+        -- Hover effect
+        colorBtn.MouseEnter:Connect(function()
+            Tween:Create(colorBtn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = colorValue}):Play()
+            Tween:Create(cbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0}):Play()
+        end)
+        colorBtn.MouseLeave:Connect(function()
+            if Lib._neonColorName ~= colorName then
+                Tween:Create(colorBtn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(20,25,45)}):Play()
+            end
+            Tween:Create(cbs, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.3}):Play()
+        end)
+        
+        colorBtn.MouseButton1Click:Connect(function()
+            changeNeonColor(colorName, colorValue)
+        end)
+    end
 
     -- posiciona ao lado da janela
     local function reposition()
