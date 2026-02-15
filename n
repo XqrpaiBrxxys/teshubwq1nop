@@ -175,7 +175,14 @@ local function ensureLauncher()
         Lib._launcherGui = nil
         return
     end
+    -- Se já existe e está vivo, retorna
     if Lib._launcherBtn and Lib._launcherBtn.Parent then return end
+    
+    -- Limpa referências mortas
+    Lib._launcherBtn = nil
+    if Lib._launcherGui and not Lib._launcherGui.Parent then
+        Lib._launcherGui = nil
+    end
 
     local player = Players.LocalPlayer
     local gui = Lib._launcherGui
@@ -532,8 +539,12 @@ local function buildSettingsUI(anchorWin)
 
     -- Eventos Config
     btnClsCfg.MouseButton1Click:Connect(function()
-        gui.Parent = nil
+        if Lib._settingsGui and Lib._settingsGui.Parent then
+            Lib._settingsGui:Destroy()
+        end
+        Lib._settingsGui = nil
         Lib._settingsOpen = false
+        Lib._settingsWasOpen = false
     end)
 
     tBtn.MouseButton1Click:Connect(function()
@@ -1210,6 +1221,14 @@ end
 function Lib:_spawnWindow(opts)
     opts = opts or {}
     
+    -- Limpa GUI settings anterior se existir
+    if Lib._settingsGui and Lib._settingsGui.Parent then
+        pcall(function() Lib._settingsGui:Destroy() end)
+    end
+    Lib._settingsGui = nil
+    Lib._settingsOpen = false
+    Lib._settingsWasOpen = false
+    
     -- Restaura launcher e hotkey
     Lib._launcherEnabled = true
     if Lib._hotkeyConn then
@@ -1312,7 +1331,132 @@ function Lib:_spawnWindow(opts)
     end
     local btnCls = mkHeadBtn("X"); btnCls.Parent = header; btnCls.Size = UDim2.fromOffset(36,32); btnCls.Position = UDim2.new(1,-44,0.5,-16)
     local btnMin = mkHeadBtn("-"); btnMin.Parent = header; btnMin.Size = UDim2.fromOffset(36,32); btnMin.Position = UDim2.new(1,-88,0.5,-16)
-    local btnCfg = mkHeadBtn("⚙"); btnCfg.Parent = header; btnCfg.Size = UDim2.fromOffset(36,32); btnCfg.Position = UDim2.new(1,-132,0.5,-16)
+    local btnColor = mkHeadBtn("🎨"); btnColor.Parent = header; btnColor.Size = UDim2.fromOffset(36,32); btnColor.Position = UDim2.new(1,-132,0.5,-16)
+    local btnCfg = mkHeadBtn("⚙"); btnCfg.Parent = header; btnCfg.Size = UDim2.fromOffset(36,32); btnCfg.Position = UDim2.new(1,-176,0.5,-16)
+
+    -- Menu de cores flutuante
+    local colorMenuOpen = false
+    local colorMenuGui = nil
+    local function createColorMenu()
+        if colorMenuGui and colorMenuGui.Parent then return end
+        
+        local colorMenu = Instance.new("Frame")
+        colorMenu.Name = "ColorMenu"
+        colorMenu.Size = UDim2.fromOffset(200, 240)
+        colorMenu.BackgroundColor3 = Color3.fromRGB(16,18,28)
+        colorMenu.BorderSizePixel = 0
+        colorMenu.ZIndex = 920
+        colorMenu.Parent = gui
+        Instance.new("UICorner", colorMenu).CornerRadius = UDim.new(0,14)
+        local cms = Instance.new("UIStroke", colorMenu); cms.Color = Lib._neonColor; cms.Transparency = 0.3; cms.Thickness = 2
+        
+        -- Position below color button
+        local btnPos = btnColor.AbsolutePosition
+        colorMenu.Position = UDim2.new(0, btnPos.X - 80, 0, btnPos.Y + 40)
+        
+        -- Title
+        local title = Instance.new("TextLabel", colorMenu)
+        title.BackgroundTransparency = 1
+        title.Text = "Select Theme"
+        title.Font = Enum.Font.GothamBold
+        title.TextScaled = true
+        title.TextColor3 = Color3.fromRGB(250,251,255)
+        title.Size = UDim2.new(1, -16, 0, 30)
+        title.Position = UDim2.new(0, 8, 0, 8)
+        Instance.new("UITextSizeConstraint", title).MaxTextSize = 14
+        
+        -- Color list container
+        local colorList = Instance.new("Frame", colorMenu)
+        colorList.BackgroundTransparency = 1
+        colorList.Size = UDim2.new(1, -16, 1, -50)
+        colorList.Position = UDim2.new(0, 8, 0, 40)
+        
+        local layout = Instance.new("UIListLayout", colorList)
+        layout.Padding = UDim.new(0, 6)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        
+        local colorOrder = {"🔵 Azul", "🟣 Roxo", "🔴 Rosa", "🟢 Verde", "🟡 Ciano", "🟠 Laranja"}
+        for idx, colorName in ipairs(colorOrder) do
+            local colorValue = NEON_COLORS[colorName]
+            if colorValue then
+                local colorItem = Instance.new("TextButton", colorList)
+                colorItem.Text = colorName
+                colorItem.Font = Enum.Font.GothamSemibold
+                colorItem.TextScaled = true
+                colorItem.TextColor3 = Color3.fromRGB(250,251,255)
+                colorItem.Size = UDim2.new(1, 0, 0, 28)
+                colorItem.BackgroundColor3 = colorValue
+                colorItem.BorderSizePixel = 0
+                colorItem.AutoButtonColor = false
+                colorItem.ZIndex = 921
+                Instance.new("UICorner", colorItem).CornerRadius = UDim.new(0,8)
+                
+                local cis = Instance.new("UIStroke", colorItem); cis.Color = Color3.fromRGB(250,251,255); cis.Transparency = Lib._neonColorName == colorName and 0 or 0.8; cis.Thickness = Lib._neonColorName == colorName and 2 or 1
+                
+                colorItem.MouseEnter:Connect(function()
+                    Tween:Create(colorItem, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.new(colorValue.R * 1.1, colorValue.G * 1.1, colorValue.B * 1.1)}):Play()
+                    Tween:Create(cis, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0}):Play()
+                end)
+                
+                colorItem.MouseLeave:Connect(function()
+                    Tween:Create(colorItem, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = colorValue}):Play()
+                    if Lib._neonColorName ~= colorName then
+                        Tween:Create(cis, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.8}):Play()
+                    end
+                end)
+                
+                colorItem.MouseButton1Click:Connect(function()
+                    Lib._neonColorName = colorName
+                    Lib._neonColor = colorValue
+                    saveSettings()
+                    
+                    -- Update all strokes
+                    Tween:Create(st, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+                    Tween:Create(hs, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+                    Tween:Create(wS, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+                    Tween:Create(cms, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Color = colorValue}):Play()
+                    
+                    -- Update header colors
+                    local bgIntensity = 0.25
+                    local headerBg = Color3.new(
+                        math.max(0.05, colorValue.R * bgIntensity * 0.4),
+                        math.max(0.05, colorValue.G * bgIntensity * 0.4),
+                        math.max(0.1, colorValue.B * bgIntensity * 0.4)
+                    )
+                    Tween:Create(header, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = headerBg}):Play()
+                    
+                    -- Update icon color
+                    if hIcon then
+                        local r, g, b = colorValue.R, colorValue.G, colorValue.B
+                        local brightness = (r + g + b) / 3
+                        local glowIntensity = math.max(1, brightness * 2)
+                        local glowColor = Color3.new(colorValue.R * glowIntensity, colorValue.G * glowIntensity, colorValue.B * glowIntensity)
+                        Tween:Create(hIcon, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = colorValue}):Play()
+                    end
+                    
+                    showToast("Theme: " .. colorName)
+                    colorMenuOpen = false
+                    colorMenuGui:Destroy()
+                    colorMenuGui = nil
+                end)
+            end
+        end
+        
+        colorMenuGui = colorMenu
+    end
+    
+    btnColor.MouseButton1Click:Connect(function()
+        if not colorMenuOpen then
+            colorMenuOpen = true
+            createColorMenu()
+        else
+            colorMenuOpen = false
+            if colorMenuGui and colorMenuGui.Parent then
+                colorMenuGui:Destroy()
+            end
+            colorMenuGui = nil
+        end
+    end)
 
     -- Estado de minimização
     local isMinimized = false
