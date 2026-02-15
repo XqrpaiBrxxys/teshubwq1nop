@@ -1,36 +1,44 @@
--- SyniX Hub - VERSÃO PREMIUM COM MELHORIAS VISUAIS
--- Todas as funções originais mantidas + melhorias de design
--- Melhorias: Cores premium, animações suaves, efeitos hover, mobile otimizado
+-- SyniX Hub - VERSÃO PREMIUM (Visual Melhorado)
+-- Mantém TODAS as funcionalidades originais
+-- Melhorias: Cores premium, animações suaves, tamanhos otimizados para mobile
 
 if _G.__SyniXSingleton then return _G.__SyniXSingleton end
 
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-local Tween = game:GetService("TweenService")
+local UIS     = game:GetService("UserInputService")
+local Tween   = game:GetService("TweenService")
 
 local Lib = {}
 Lib.__index = Lib
 
--- Estado (mantido igual)
-Lib._launcherGui = nil
-Lib._launcherBtn = nil
-Lib._currentGui = nil
-Lib._currentWinObj = nil
-Lib._lastOpts = nil
-Lib._openWindows = {}
-Lib._launcherEnabled = true
-Lib._showLauncher = (_G.SyniX_Settings and _G.SyniX_Settings.showLauncher) ~= false
-Lib._settingsGui = nil
-Lib._settingsOpen = false
-Lib._settingsWasOpen = false
-Lib._capturingKey = false
-Lib._hotkeyConn = nil
+-- ===== Estado =====
+Lib._launcherGui     = nil
+Lib._launcherBtn     = nil
+Lib._currentGui      = nil
+Lib._currentWinObj   = nil
+Lib._lastOpts        = nil
+Lib._openWindows     = {}
 
+Lib._launcherEnabled = true
+Lib._showLauncher    = (_G.SyniX_Settings and _G.SyniX_Settings.showLauncher) ~= false
+
+-- Config
+Lib._settingsGui       = nil
+Lib._settingsOpen      = false
+Lib._settingsWasOpen   = false
+Lib._capturingKey      = false
+Lib._hotkeyConn        = nil
+
+-- Keybind p/ minimizar
 local defaultKeyName = (_G.SyniX_Settings and _G.SyniX_Settings.minKeyName) or "M"
 Lib._minKey = Enum.KeyCode[defaultKeyName] or Enum.KeyCode.M
-Lib._discordLink = (_G.SyniX_Settings and _G.SyniX_Settings.discordLink) or _G.SyniX_DiscordInvite or "https://discord.gg/BvQ8F4ux7h"
 
--- ===== TEMA MELHORADO =====
+-- Discord invite
+Lib._discordLink = (_G.SyniX_Settings and _G.SyniX_Settings.discordLink)
+                or _G.SyniX_DiscordInvite
+                or "https://discord.gg/BvQ8F4ux7h"
+
+-- ===== TEMA PREMIUM =====
 local DEFAULT_THEME = {
     -- Cores mais escuras e modernas
     bg_window   = Color3.fromRGB(12,13,18),
@@ -51,7 +59,6 @@ local DEFAULT_THEME = {
     toggle_off  = Color3.fromRGB(50,52,62),
     knob_on     = Color3.fromRGB(255,255,255),
     knob_off    = Color3.fromRGB(200,205,215),
-    success     = Color3.fromRGB(67,181,129),
     -- Tamanhos otimizados para mobile
     sidebarWidth = 180,
     rowHeight    = 52,
@@ -61,7 +68,7 @@ local DEFAULT_THEME = {
     winSize      = UDim2.fromOffset(720,440),
 }
 
--- ===== Utils (mantidos) =====
+-- ===== Utils =====
 local function merge(a,b)
     local t = {}
     for k,v in pairs(a or {}) do t[k]=v end
@@ -69,7 +76,7 @@ local function merge(a,b)
     return t
 end
 
--- NOVO: Adiciona efeito hover suave
+-- NOVO: Efeito hover suave
 local function addHoverEffect(btn, normalColor, hoverColor)
     btn.MouseEnter:Connect(function()
         Tween:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -102,7 +109,7 @@ local function enableDrag(frame, clampToScreen)
         if not dragging then return end
         if i.UserInputType~=Enum.UserInputType.MouseMovement and i.UserInputType~=Enum.UserInputType.Touch then return end
         local delta = mousePos() - startMouse
-        local pos = startPos + delta
+        local pos   = startPos + delta
         if clampToScreen and frame.Parent then
             pos = Vector2.new(
                 math.clamp(pos.X, 0, math.max(0, frame.Parent.AbsoluteSize.X - frame.AbsoluteSize.X)),
@@ -148,8 +155,8 @@ end
 
 local function saveSettings()
     _G.SyniX_Settings = _G.SyniX_Settings or {}
-    _G.SyniX_Settings.minKeyName = Lib._minKey and Lib._minKey.Name or "M"
-    _G.SyniX_Settings.showLauncher = (Lib._showLauncher ~= false)
+    _G.SyniX_Settings.minKeyName  = Lib._minKey and Lib._minKey.Name or "M"
+    _G.SyniX_Settings.showLauncher= (Lib._showLauncher ~= false)
     _G.SyniX_Settings.discordLink = Lib._discordLink
 end
 
@@ -186,9 +193,8 @@ local function ensureLauncher()
     launcher.AutoButtonColor = false
     launcher.ZIndex = 1001
     Instance.new("UICorner", launcher).CornerRadius = UDim.new(1,0)
-    
     local s = Instance.new("UIStroke", launcher)
-    s.Transparency = 0.3
+    s.Transparency = 0.3 -- Mais visível
     s.Color = Color3.fromRGB(255,255,255)
     s.Thickness = 2
     launcher.Parent = gui
@@ -275,4 +281,264 @@ local function CopyDiscordLink()
     end
 end
 
--- Continua na próxima mensagem (código muito grande)
+local function buildSettingsUI(anchorWin)
+    if Lib._settingsGui and Lib._settingsGui.Parent then return Lib._settingsGui end
+
+    local player = Players.LocalPlayer
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "SyniX_Settings"
+    gui.IgnoreGuiInset, gui.ResetOnSpawn = true, false
+    gui.DisplayOrder = 1200
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.Parent = player:WaitForChild("PlayerGui")
+
+    local panel = Instance.new("Frame")
+    panel.Name = "Panel"
+    panel.Size = UDim2.fromOffset(320, 210)
+    panel.BackgroundColor3 = DEFAULT_THEME.bg_header
+    panel.ZIndex = 10
+    panel.Parent = gui
+    Instance.new("UICorner", panel).CornerRadius = UDim.new(0,12)
+    local st = Instance.new("UIStroke", panel); st.Color = DEFAULT_THEME.stroke; st.Transparency = 0.2
+    enableDrag(panel, true)
+
+    local head = Instance.new("Frame", panel)
+    head.Size = UDim2.new(1, -12, 0, 38)
+    head.Position = UDim2.new(0, 6, 0, 6)
+    head.BackgroundColor3 = DEFAULT_THEME.card
+    head.ZIndex = 11
+    Instance.new("UICorner", head).CornerRadius = UDim.new(0,8)
+    local hs = Instance.new("UIStroke", head); hs.Transparency = 0.7
+
+    local title = Instance.new("TextLabel", head)
+    title.BackgroundTransparency = 1
+    title.Text = "SETTINGS"
+    title.Font = Enum.Font.GothamBold
+    title.TextColor3 = DEFAULT_THEME.text
+    title.TextScaled = true
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.ZIndex = 12
+    title.Position = UDim2.new(0, 10, 0, 4)
+    title.Size = UDim2.new(1, -60, 1, -8)
+    Instance.new("UITextSizeConstraint", title).MaxTextSize = 18
+
+    local minCfg = Instance.new("TextButton", head)
+    minCfg.Text = "-"
+    minCfg.Font = Enum.Font.GothamBold
+    minCfg.TextScaled = true
+    minCfg.TextColor3 = DEFAULT_THEME.text
+    minCfg.Size = UDim2.fromOffset(30,24)
+    minCfg.Position = UDim2.new(1,-36,0.5,-12)
+    minCfg.BackgroundColor3 = DEFAULT_THEME.row
+    minCfg.ZIndex = 12
+    Instance.new("UICorner", minCfg).CornerRadius = UDim.new(0,6)
+    Instance.new("UITextSizeConstraint", minCfg).MaxTextSize = 16
+    addHoverEffect(minCfg, DEFAULT_THEME.row, DEFAULT_THEME.row_hover)
+
+    local body = Instance.new("Frame", panel)
+    body.BackgroundTransparency = 1
+    body.ZIndex = 11
+    body.Position = UDim2.new(0, 10, 0, 52)
+    body.Size = UDim2.new(1, -20, 1, -62)
+
+    local list = Instance.new("UIListLayout", body)
+    list.Padding = UDim.new(0,8)
+    list.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local rowKey = Instance.new("Frame", body)
+    rowKey.Size = UDim2.new(1,0,0,38)
+    rowKey.BackgroundColor3 = DEFAULT_THEME.row
+    rowKey.ZIndex = 11
+    Instance.new("UICorner", rowKey).CornerRadius = UDim.new(0,8)
+
+    local lbKey = Instance.new("TextLabel", rowKey)
+    lbKey.BackgroundTransparency = 1
+    lbKey.Text = "Hide Menu"
+    lbKey.Font = Enum.Font.GothamSemibold
+    lbKey.TextScaled = true
+    lbKey.TextXAlignment = Enum.TextXAlignment.Left
+    lbKey.TextColor3 = DEFAULT_THEME.text
+    lbKey.ZIndex = 12
+    lbKey.Position = UDim2.new(0, 10, 0, 4)
+    lbKey.Size = UDim2.new(1, -130, 1, -8)
+    Instance.new("UITextSizeConstraint", lbKey).MaxTextSize = 15
+
+    local keyBtn = Instance.new("TextButton", rowKey)
+    keyBtn.Text = Lib._minKey and Lib._minKey.Name or "M"
+    keyBtn.Font = Enum.Font.GothamBold
+    keyBtn.TextScaled = true
+    keyBtn.TextColor3 = DEFAULT_THEME.bg_window
+    keyBtn.ZIndex = 12
+    keyBtn.Size = UDim2.fromOffset(96, 30)
+    keyBtn.Position = UDim2.new(1, -106, 0.5, -15)
+    keyBtn.BackgroundColor3 = DEFAULT_THEME.knob_off
+    Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0,8)
+    Instance.new("UITextSizeConstraint", keyBtn).MaxTextSize = 16
+
+    local rowBall = Instance.new("Frame", body)
+    rowBall.Size = UDim2.new(1,0,0,38)
+    rowBall.BackgroundColor3 = DEFAULT_THEME.row
+    rowBall.ZIndex = 11
+    Instance.new("UICorner", rowBall).CornerRadius = UDim.new(0,8)
+
+    local lbBall = Instance.new("TextLabel", rowBall)
+    lbBall.BackgroundTransparency = 1
+    lbBall.Text = "SHOW ICON"
+    lbBall.Font = Enum.Font.GothamSemibold
+    lbBall.TextScaled = true
+    lbBall.TextXAlignment = Enum.TextXAlignment.Left
+    lbBall.TextColor3 = DEFAULT_THEME.text
+    lbBall.ZIndex = 12
+    lbBall.Position = UDim2.new(0, 10, 0, 4)
+    lbBall.Size = UDim2.new(1, -140, 1, -8)
+    Instance.new("UITextSizeConstraint", lbBall).MaxTextSize = 15
+
+    local tBtn = Instance.new("TextButton", rowBall)
+    tBtn.Text = ""
+    tBtn.AutoButtonColor = false
+    tBtn.Size = UDim2.fromOffset(66, 26)
+    tBtn.Position = UDim2.new(1, -76, 0.5, -13)
+    tBtn.BackgroundColor3 = Lib._showLauncher and DEFAULT_THEME.toggle_on or DEFAULT_THEME.toggle_off
+    tBtn.ZIndex = 12
+    Instance.new("UICorner", tBtn).CornerRadius = UDim.new(1,0)
+
+    local knob = Instance.new("Frame", tBtn)
+    knob.Size = UDim2.fromOffset(22,22)
+    knob.Position = Lib._showLauncher and UDim2.new(0, 42, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)
+    knob.BackgroundColor3 = Lib._showLauncher and DEFAULT_THEME.knob_on or DEFAULT_THEME.knob_off
+    knob.ZIndex = 13
+    Instance.new("UICorner", knob).CornerRadius = UDim.new(1,0)
+    local ks = Instance.new("UIStroke", knob); ks.Transparency = 0.7
+
+    local function paintToggle(v)
+        Tween:Create(tBtn, TweenInfo.new(0.16, Enum.EasingStyle.Quad), {BackgroundColor3 = v and DEFAULT_THEME.toggle_on or DEFAULT_THEME.toggle_off}):Play()
+        Tween:Create(knob, TweenInfo.new(0.16, Enum.EasingStyle.Quad), {
+            Position = v and UDim2.new(0, 42, 0.5, -11) or UDim2.new(0, 2, 0.5, -11),
+            BackgroundColor3 = v and DEFAULT_THEME.knob_on or DEFAULT_THEME.knob_off
+        }):Play()
+    end
+
+    local rowDisc = Instance.new("TextButton", body)
+    rowDisc.Text = ""
+    rowDisc.AutoButtonColor = false
+    rowDisc.Size = UDim2.new(1,0,0,38)
+    rowDisc.BackgroundColor3 = DEFAULT_THEME.card
+    rowDisc.ZIndex = 11
+    Instance.new("UICorner", rowDisc).CornerRadius = UDim.new(0,8)
+    addHoverEffect(rowDisc, DEFAULT_THEME.card, DEFAULT_THEME.card_hover)
+
+    local ic = Instance.new("ImageLabel", rowDisc)
+    ic.BackgroundTransparency = 1
+    ic.Image = "rbxassetid://131654640309321"
+    ic.Size = UDim2.fromOffset(18,18)
+    ic.Position = UDim2.new(0, 10, 0.5, -9)
+    ic.ImageColor3 = Color3.fromRGB(235,235,240)
+    ic.ZIndex = 12
+
+    local lbDisc = Instance.new("TextLabel", rowDisc)
+    lbDisc.BackgroundTransparency = 1
+    lbDisc.Text = "COPY DISCORD"
+    lbDisc.Font = Enum.Font.GothamBold
+    lbDisc.TextScaled = true
+    lbDisc.TextXAlignment = Enum.TextXAlignment.Left
+    lbDisc.TextColor3 = DEFAULT_THEME.text
+    lbDisc.Position = UDim2.new(0, 36, 0, 0)
+    lbDisc.Size = UDim2.new(1, -36, 1, 0)
+    lbDisc.ZIndex = 20
+    Instance.new("UITextSizeConstraint", lbDisc).MaxTextSize = 16
+
+    local toast = Instance.new("TextLabel", panel)
+    toast.BackgroundTransparency = 1
+    toast.Text = ""
+    toast.Font = Enum.Font.GothamSemibold
+    toast.TextColor3 = DEFAULT_THEME.text
+    toast.TextScaled = true
+    toast.ZIndex = 20
+    toast.Position = UDim2.new(0.5, -160, 1, -30)
+    toast.Size = UDim2.fromOffset(320, 20)
+    toast.Visible = false
+    Instance.new("UITextSizeConstraint", toast).MaxTextSize = 14
+
+    local function showToast(txt)
+        toast.Text = txt
+        toast.Visible = true
+        toast.TextTransparency = 1
+        Tween:Create(toast, TweenInfo.new(0.15), {TextTransparency = 0}):Play()
+        task.delay(1.2, function()
+            Tween:Create(toast, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+            task.delay(0.22, function() toast.Visible = false end)
+        end)
+    end
+
+    minCfg.MouseButton1Click:Connect(function()
+        gui.Enabled = false
+        Lib._settingsOpen = false
+    end)
+
+    tBtn.MouseButton1Click:Connect(function()
+        Lib._showLauncher = not Lib._showLauncher
+        paintToggle(Lib._showLauncher)
+        if Lib._showLauncher then ensureLauncher() else destroyLauncher() end
+        saveSettings()
+    end)
+
+    keyBtn.MouseButton1Click:Connect(function()
+        if Lib._capturingKey then return end
+        Lib._capturingKey = true
+        keyBtn.Text = "Pressione..."
+        local conn
+        conn = UIS.InputBegan:Connect(function(input, gpe)
+            if gpe then return end
+            if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode ~= Enum.KeyCode.Unknown then
+                Lib._minKey = input.KeyCode
+                keyBtn.Text = Lib._minKey.Name
+                Lib._capturingKey = false
+                saveSettings()
+                if conn then conn:Disconnect() end
+            end
+        end)
+    end)
+
+    rowDisc.MouseButton1Click:Connect(function()
+        if _G.SyniX_DiscordInvite and type(_G.SyniX_DiscordInvite)=="string" and #_G.SyniX_DiscordInvite>0 then
+            Lib._discordLink = _G.SyniX_DiscordInvite
+            saveSettings()
+        end
+        CopyDiscordLink()
+        showToast("Discord link copied!")
+    end)
+
+    local function reposition()
+        local screenSize = gui.AbsoluteSize
+        local px, py = 100, 100
+        if anchorWin and anchorWin.Parent then
+            local ap = anchorWin.AbsolutePosition
+            local as = anchorWin.AbsoluteSize
+            px = ap.X + as.X - panel.AbsoluteSize.X - 8
+            py = ap.Y + 46 + 8
+        end
+        px = math.clamp(px, 6, math.max(6, screenSize.X - panel.AbsoluteSize.X - 6))
+        py = math.clamp(py, 6, math.max(6, screenSize.Y - panel.AbsoluteSize.Y - 6))
+        panel.Position = UDim2.fromOffset(px, py)
+    end
+    task.defer(reposition)
+
+    Lib._settingsGui = gui
+    return gui
+end
+
+function Lib:_toggleSettings(anchorWin)
+    if Lib._settingsGui and Lib._settingsGui.Parent then
+        local newState = not Lib._settingsGui.Enabled
+        Lib._settingsGui.Enabled = newState
+        Lib._settingsOpen = newState
+        Lib._settingsWasOpen = newState
+        return
+    end
+    local g = buildSettingsUI(anchorWin)
+    g.Enabled = true
+    Lib._settingsOpen = true
+    Lib._settingsWasOpen = true
+end
+
+-- Continua na próxima parte (código muito grande)...
